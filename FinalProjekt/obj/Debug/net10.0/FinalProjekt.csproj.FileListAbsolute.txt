@@ -1,0 +1,17 @@
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.csproj.AssemblyReference.cache
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.GeneratedMSBuildEditorConfig.editorconfig
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.AssemblyInfoInputs.cache
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.AssemblyInfo.cs
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.csproj.CoreCompileInputs.cache
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/bin/Debug/net10.0/FinalProjekt
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/bin/Debug/net10.0/FinalProjekt.deps.json
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/bin/Debug/net10.0/FinalProjekt.runtimeconfig.json
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/bin/Debug/net10.0/FinalProjekt.dll
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/bin/Debug/net10.0/FinalProjekt.pdb
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/bin/Debug/net10.0/Spectre.Console.dll
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalPro.6B66ED9C.Up2Date
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.dll
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/refint/FinalProjekt.dll
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.pdb
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/FinalProjekt.genruntimeconfig.cache
+/home/dany/RiderProjects/FinalProjekt/FinalProjekt/obj/Debug/net10.0/ref/FinalProjekt.dll
