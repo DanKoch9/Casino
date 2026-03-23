@@ -1,12 +1,19 @@
 using FinalProjekt.Core;
+using FinalProjekt.UI;
 using Spectre.Console;
 
 namespace FinalProjekt.Games;
 
 public class SlotMachine : Game
 {
+    
     public string Name => "Slot Machine";
-    Account account = new Account();
+    private readonly Account _account;    
+    private readonly SlotRenderer _renderer = new SlotRenderer();
+    public SlotMachine(Account account)
+    {
+        _account = account;
+    }
     public void Play()
     {
         while (true)
@@ -18,16 +25,24 @@ public class SlotMachine : Game
             switch (choice)
             {
                 case "Play":
-                    int number = Random.Shared.Next(1, 7);
-                    if (number == 6)
+                    int num1 = Random.Shared.Next(1, 10);
+                    int num2 = Random.Shared.Next(1, 10);
+                    int num3 = Random.Shared.Next(1, 10);
+                    
+                    _renderer.AnimateSpin(num1, num2, num3);
+                    
+                    if (num1 == num2 && num2 == num3)
                     {
-                        account.Deposit(1000);
-                        Console.WriteLine("You won 1000");
+                        Console.WriteLine($"JACKPOT!!!");
+                        _account.Deposit(1000);
+                    }
+                    else if (num1 == num2 || num2 == num3 || num1 == num3)
+                    {
+                        Console.WriteLine($"Big WIN!");
                     }
                     else
                     {
-                        account.Withdraw(1000);
-                        Console.WriteLine("You lost 1000");
+                        Console.WriteLine($"U lost!");
                     }
                     break;
                 case "Main Menu":

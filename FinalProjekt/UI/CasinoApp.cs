@@ -4,8 +4,13 @@ namespace FinalProjekt.Core;
 
 public class CasinoApp
 {
-        private readonly Account account = new Account();
-        private Game slots = new SlotMachine();
+        private readonly SlotMachine slots;
+        private readonly Account account;
+        public CasinoApp()
+        {
+                account = new Account();
+                slots = new SlotMachine(account);
+        }
         
         public void Loop()
         {
