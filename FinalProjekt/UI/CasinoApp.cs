@@ -5,39 +5,51 @@ namespace FinalProjekt.Core;
 
 public class CasinoApp
 {
-        private readonly SlotMachine slots;
-        private readonly Account account;
-        public CasinoApp()
-        {
-                account = new Account();
-                slots = new SlotMachine(account);
-        }
+    private readonly List<IGame> _games;
+    private readonly Account _account;
 
-        public void ShowSplash()
+    public CasinoApp()
+    {
+        _account = new Account();
+        _games = new List<IGame>
         {
-                Console.Clear();
-                AnsiConsole.Write(new FigletText("CASINO")
-                        .Color(Color.White)
-                );
-        }
-        
-        public void Loop()
+            new SlotMachine(_account)
+        };
+    }
+
+    public void ShowSplash()
+    {
+        Console.Clear();
+        AnsiConsole.Write(new FigletText("CASINO")
+            .Color(Color.White)
+        );
+    }
+
+    public void Loop()
+    {
+        while (true)
         {
-                while (true)
-                {
-                        Console.Clear();
-                        ShowSplash();
-                        string choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Select a game")
-                                .AddChoices("Slot Machine", "Exit"));
-                        switch (choice)
-                        {
-                                case "Slot Machine":
-                                        slots.ShowSplash();
-                                        slots.Play();
-                                        break;
-                                case "Exit":
-                                        return;
-                        }
-                }
+            Console.Clear();
+            ShowSplash();
+
+            SelectionPrompt<string> menu = new SelectionPrompt<string>()
+                .Title("Select a game")
+                .AddChoices(_games.Select(g => g.Name))
+                .AddChoices("Exit");
+
+            string choice = AnsiConsole.Prompt(menu);
+
+            if (choice == "Exit")
+            {
+                return;
+            }
+
+            IGame? selectedGame = _games.FirstOrDefault(g => g.Name == choice);
+            if (selectedGame != null)
+            {
+                selectedGame.ShowSplash();
+                selectedGame.Play();
+            }
         }
+    }
 }

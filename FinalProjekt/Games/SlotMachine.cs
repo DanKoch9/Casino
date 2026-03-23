@@ -4,7 +4,7 @@ using Spectre.Console;
 
 namespace FinalProjekt.Games;
 
-public class SlotMachine : Game
+public class SlotMachine : IGame
 {
     
     public string Name => "Slot Machine";
@@ -40,13 +40,15 @@ public class SlotMachine : Game
                     
                     if (num1 == num2 && num2 == num3)
                     {
-                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {bet*5}[/]");
-                        _account.Deposit(bet*5);
+                        int winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
+                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount}[/]");
+                        _account.Deposit(winAmount);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
-                        AnsiConsole.MarkupLine($"[green]You won {bet*2}[/]");
-                        _account.Deposit(bet*2);
+                        int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
+                        AnsiConsole.MarkupLine($"[green]You won {winAmount}[/]");
+                        _account.Deposit(winAmount);
                     }
                     else
                     {

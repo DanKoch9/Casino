@@ -6,7 +6,7 @@ public class SlotRenderer
 {
     public void AnimateSpin(int target1, int target2, int target3)
     {
-        var table = new Table().Centered().Border(TableBorder.Rounded).HideHeaders();
+        Table table = new Table().Centered().Border(TableBorder.Rounded).HideHeaders();
         table.AddColumn(new TableColumn("").Centered());
         table.AddColumn(new TableColumn("").Centered());
         table.AddColumn(new TableColumn("").Centered());
