@@ -22,6 +22,13 @@ public class SlotMachine : Game
                 .Title("Choose a color")
                 .AddChoices("Play", "Main Menu")
             );
+            
+            int bet = AnsiConsole.Prompt(
+                new TextPrompt<int>("How much do you want to bet?")
+                    .ValidationErrorMessage("[red]That's not a valid number[/]")
+                    .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
+                );
+            _account.Withdraw(bet);
             switch (choice)
             {
                 case "Play":
@@ -33,23 +40,24 @@ public class SlotMachine : Game
                     
                     if (num1 == num2 && num2 == num3)
                     {
-                        Console.WriteLine($"JACKPOT!!!");
-                        _account.Deposit(1000);
+                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {bet*5}[/]");
+                        _account.Deposit(bet*5);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
-                        Console.WriteLine($"Big WIN!");
+                        AnsiConsole.MarkupLine($"[green]You won {bet*2}[/]");
+                        _account.Deposit(bet*2);
                     }
                     else
                     {
-                        Console.WriteLine($"U lost!");
+                        AnsiConsole.MarkupLine($"[red] You lost {bet} credits [/]");
                     }
                     break;
                 case "Main Menu":
                     return;
             }
-            Console.WriteLine(choice);
-            Thread.Sleep(1000);
+            AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
+            Console.ReadKey(true);
             ShowSplash();
         }
     }
