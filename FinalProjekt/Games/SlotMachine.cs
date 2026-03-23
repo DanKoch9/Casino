@@ -19,19 +19,19 @@ public class SlotMachine : Game
         while (true)
         {
             string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title("Choose a color")
+                .Title("Select an option")
                 .AddChoices("Play", "Main Menu")
             );
             
-            int bet = AnsiConsole.Prompt(
-                new TextPrompt<int>("How much do you want to bet?")
-                    .ValidationErrorMessage("[red]That's not a valid number[/]")
-                    .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
-                );
-            _account.Withdraw(bet);
             switch (choice)
             {
                 case "Play":
+                    int bet = AnsiConsole.Prompt(
+                        new TextPrompt<int>("How much do you want to bet?")
+                            .ValidationErrorMessage("[red]That's not a valid number[/]")
+                            .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
+                    );
+                    _account.Withdraw(bet);
                     int num1 = Random.Shared.Next(1, 10);
                     int num2 = Random.Shared.Next(1, 10);
                     int num3 = Random.Shared.Next(1, 10);
@@ -50,7 +50,7 @@ public class SlotMachine : Game
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"[red] You lost {bet} credits [/]");
+                        AnsiConsole.MarkupLine($"[red]You lost {bet} credits [/]");
                     }
                     break;
                 case "Main Menu":
