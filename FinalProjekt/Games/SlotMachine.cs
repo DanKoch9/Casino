@@ -6,18 +6,29 @@ namespace FinalProjekt.Games;
 public class SlotMachine : Game
 {
     public string Name => "Slot Machine";
-
+    Account account = new Account();
     public void Play()
     {
         while (true)
         {
-            string choice = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Choose a color")
-                .AddChoices("Play", "Add Credits", "Main Menu"));
+            string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                .Title("Choose a color")
+                .AddChoices("Play", "Main Menu")
+            );
             switch (choice)
             {
                 case "Play":
-                    break;
-                case "Add Credits":
+                    int number = Random.Shared.Next(1, 7);
+                    if (number == 6)
+                    {
+                        account.Deposit(1000);
+                        Console.WriteLine("You won 1000");
+                    }
+                    else
+                    {
+                        account.Withdraw(1000);
+                        Console.WriteLine("You lost 1000");
+                    }
                     break;
                 case "Main Menu":
                     return;
@@ -32,6 +43,8 @@ public class SlotMachine : Game
     {
         Console.Clear();
 
-        AnsiConsole.Write(new FigletText("Slot Machine").Color(Color.Green));
+        AnsiConsole.Write(new FigletText("Slot Machine")
+            .Color(Color.Green)
+        );
     }
 }
