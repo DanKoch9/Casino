@@ -10,6 +10,7 @@ public class SlotMachine : IGame
     public string Name => "Slot Machine";
     private readonly Account _account;    
     private readonly SlotRenderer _renderer = new SlotRenderer();
+    private readonly RigEngine _rigEngine = new RigEngine();
     public SlotMachine(Account account)
     {
         _account = account;
@@ -26,15 +27,27 @@ public class SlotMachine : IGame
             switch (choice)
             {
                 case "Play":
+                    if (_account.Balance <= 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]You have no credits left! Go back to the main menu to add more.[/]");
+                        break;
+                    }
                     int bet = AnsiConsole.Prompt(
                         new TextPrompt<int>("How much do you want to bet?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
-                    _account.Withdraw(bet);
-                    int num1 = Random.Shared.Next(1, 10);
-                    int num2 = Random.Shared.Next(1, 10);
-                    int num3 = Random.Shared.Next(1, 10);
+                    _account.Deduct(bet);
+                    int num1 = Random.Shared.Next(0, 10);
+                    int num2 = Random.Shared.Next(0, 10);
+                    int num3 = Random.Shared.Next(0, 10);
+
+                    bool isWin = (num1 == num2 || num2 == num3 || num1 == num3);
+                    if (isWin && !_rigEngine.IsWinAllowed(_account))
+                    {
+                        num3 = (num1 + 1) % 10;
+                        if (num3 == num1 || num3 == num2) num3 = (num3 + 1) % 10;
+                    }
                     
                     _renderer.AnimateSpin(num1, num2, num3);
                     
@@ -42,17 +55,20 @@ public class SlotMachine : IGame
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
                         AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount}[/]");
-                        _account.Deposit(winAmount);
+                        _account.Add(winAmount);
+                        _rigEngine.RecordResult(true);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
                         AnsiConsole.MarkupLine($"[green]You won {winAmount}[/]");
-                        _account.Deposit(winAmount);
+                        _account.Add(winAmount);
+                        _rigEngine.RecordResult(true);
                     }
                     else
                     {
                         AnsiConsole.MarkupLine($"[red]You lost {bet} credits [/]");
+                        _rigEngine.RecordResult(false);
                     }
                     break;
                 case "Main Menu":
@@ -71,5 +87,7 @@ public class SlotMachine : IGame
         AnsiConsole.Write(new FigletText("Slot Machine")
             .Color(Color.Green)
         );
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
     }
+    
 }

@@ -23,6 +23,7 @@ public class CasinoApp
         AnsiConsole.Write(new FigletText("CASINO")
             .Color(Color.White)
         );
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
     }
 
     public void Loop()
@@ -35,13 +36,19 @@ public class CasinoApp
             SelectionPrompt<string> menu = new SelectionPrompt<string>()
                 .Title("Select a game")
                 .AddChoices(_games.Select(g => g.Name))
-                .AddChoices("Exit");
+                .AddChoices("Add Credits", "Exit");
 
             string choice = AnsiConsole.Prompt(menu);
 
             if (choice == "Exit")
             {
                 return;
+            }
+
+            if (choice == "Add Credits")
+            {
+                _account.Deposit();
+                continue;
             }
 
             IGame? selectedGame = _games.FirstOrDefault(g => g.Name == choice);

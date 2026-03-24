@@ -22,9 +22,9 @@ public class SlotRenderer
 
                 for (int frame = 0; frame <= totalFrames; frame++)
                 {
-                    string r1 = Random.Shared.Next(1, 7).ToString();
-                    string r2 = Random.Shared.Next(1, 7).ToString();
-                    string r3 = Random.Shared.Next(1, 7).ToString();
+                    string r1 = Random.Shared.Next(0, 10).ToString();
+                    string r2 = Random.Shared.Next(0, 10).ToString();
+                    string r3 = Random.Shared.Next(0, 10).ToString();
 
                     bool lock1 = frame >= (totalFrames / 3);
                     bool lock2 = frame >= (totalFrames / 3) * 2;
