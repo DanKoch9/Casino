@@ -6,18 +6,21 @@ using System.Text.Json.Serialization;
 public class DBConnector
 {
     private readonly HttpClient _client = new();
-    private readonly string? _baseUrl = Environment.GetEnvironmentVariable("PB_BASE_URL");
-    private readonly string? _adminEmail = Environment.GetEnvironmentVariable("PB_ADMIN_EMAIL");
-    private readonly string? _adminPassword = Environment.GetEnvironmentVariable("PB_ADMIN_PASSWORD");
     private string? _token;
     private string? _recordId;
 
+    private string GetUrl() => Environment.GetEnvironmentVariable("PB_BASE_URL") ?? "";
+
     private async Task<bool> Authenticate()
     {
-        var response = await _client.PostAsJsonAsync($"{_baseUrl}/api/admins/auth-with-password", new
+        var email = Environment.GetEnvironmentVariable("PB_ADMIN_EMAIL");
+        var password = Environment.GetEnvironmentVariable("PB_ADMIN_PASSWORD");
+        var url = GetUrl();
+
+        var response = await _client.PostAsJsonAsync($"{url}/api/collections/_superusers/auth-with-password", new
         {
-            identity = _adminEmail,
-            password = _adminPassword
+            identity = email,
+            password = password
         });
 
         if (response.IsSuccessStatusCode)
@@ -27,6 +30,8 @@ public class DBConnector
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
             return true;
         }
+
+        Console.WriteLine($"[DB] Auth failed: {response.StatusCode}");
         return false;
     }
 
@@ -34,7 +39,7 @@ public class DBConnector
     {
             if (_token == null) await Authenticate();
             
-            var response = await _client.GetAsync($"{_baseUrl}/api/collections/casino_data/records?limit=1");
+            var response = await _client.GetAsync($"{GetUrl()}/api/collections/casino_data/records?limit=1");
             if (response.IsSuccessStatusCode)
             {
                 var list = await response.Content.ReadFromJsonAsync<RecordList>();
@@ -56,14 +61,15 @@ public class DBConnector
             if (_recordId == null) await Load();
 
             var data = new { balance, deposited };
+            var url = GetUrl();
 
             if (_recordId != null)
             {
-                await _client.PatchAsJsonAsync($"{_baseUrl}/api/collections/casino_data/records/{_recordId}", data);
+                await _client.PatchAsJsonAsync($"{url}/api/collections/casino_data/records/{_recordId}", data);
             }
             else 
             {
-                var response = await _client.PostAsJsonAsync($"{_baseUrl}/api/collections/casino_data/records", data);
+                var response = await _client.PostAsJsonAsync($"{url}/api/collections/casino_data/records", data);
                 var result = await response.Content.ReadFromJsonAsync<GameRecord>();
                 _recordId = result?.Id;
             }
