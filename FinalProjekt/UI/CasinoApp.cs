@@ -18,6 +18,11 @@ public class CasinoApp
         };
     }
 
+    public async Task InitializeAsync()
+    {
+        await _account.InitializeAsync();
+    }
+
     public void ShowSplash()
     {
         Console.Clear();

@@ -41,8 +41,10 @@ public class SlotMachine : IGame
                     int num1 = Random.Shared.Next(0, 10);
                     int num2 = Random.Shared.Next(0, 10);
                     int num3 = Random.Shared.Next(0, 10);
+                    
+                    bool willWin = _rigEngine.IsWinAllowed(_account);
 
-                    if (_rigEngine.IsWinAllowed(_account))
+                    if (willWin)
                     {
                         if (Random.Shared.Next(1, 3) == 1)
                         {
@@ -53,12 +55,14 @@ public class SlotMachine : IGame
                             num2 = num3;
                         }
                     }
-                    
-                    bool isWin = (num1 == num2 || num2 == num3 || num1 == num3);
-                    if (isWin && !_rigEngine.IsWinAllowed(_account))
+                    else
                     {
-                        num3 = (num1 + 1) % 10;
-                        if (num3 == num1 || num3 == num2) num3 = (num3 + 1) % 10;
+                        while (num1 == num2 || num1 == num3 || num2 == num3)
+                        {
+                            num2 = (num1 + Random.Shared.Next(1, 10)) % 10;
+                            num3 = (num2 + Random.Shared.Next(1, 10)) % 10;
+                            if (num3 == num1) num3 = (num3 + 1) % 10;
+                        }
                     }
                     
                     _renderer.AnimateSpin(num1, num2, num3);

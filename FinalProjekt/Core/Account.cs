@@ -1,52 +1,35 @@
 namespace FinalProjekt.Core;
+using FinalProjekt.Data;
 using Spectre.Console;
+
 public class Account
 {
+    private readonly DBConnector _db = new();
     public double Balance { get; set; }
-    private double _deposited;
-    private const string BalancePath = "../../../Data/balance.txt";
-    private const string DepositedPath = "../../../Data/deposited.txt";
+    public double Deposited { get; set; }
     
-    public Account()
+    public async Task InitializeAsync()
     {
-        if (File.Exists(BalancePath))
-        {
-            Balance = double.Parse(File.ReadAllText(BalancePath));
-            
-        }
-        else
-        {
-            Balance = 1000;
-            SaveBalance();
-        }
-        if (File.Exists(DepositedPath))
-        {
-            _deposited = double.Parse(File.ReadAllText(DepositedPath));
-        }
-        else
-        {
-            _deposited = 0;
-            SaveDeposit();
-        }
-    }
-    public void SaveBalance()
-    {
-        File.WriteAllText(BalancePath, Balance.ToString());
+        var (balance, deposited) = await _db.Load();
+        Balance = balance;
+        Deposited = deposited;
     }
 
-    public void SaveDeposit()
+    public async Task SaveAsync()
     {
-        File.WriteAllText(DepositedPath, _deposited.ToString());
+        await _db.Save(Balance, Deposited);
     }
+
     public void Add(int amount)
     {
         Balance += amount;
-        SaveBalance();
+        _ = SaveAsync(); // Fire and forget save
     }
+
     public void Deduct(int amount)
     {
         Balance -= amount;
-        SaveBalance();
+        _ = SaveAsync(); // Fire and forget save
     }
 
     public void Deposit()
@@ -55,10 +38,10 @@ public class Account
             new TextPrompt<int>("How much do you want to add? ")
                 .Validate(n => n > 0 ? ValidationResult.Success() : ValidationResult.Error("[red]Invalid input[/]"))
         );
-        _deposited += amount;
+        Deposited += amount;
         Balance += amount;
-        SaveBalance();
-        SaveDeposit();
+        _ = SaveAsync();
+        
         AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");
         Console.ReadKey(true);
     }
