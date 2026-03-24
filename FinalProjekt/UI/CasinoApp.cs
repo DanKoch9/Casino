@@ -13,7 +13,8 @@ public class CasinoApp
         _account = new Account();
         _games = new List<IGame>
         {
-            new SlotMachine(_account)
+            new SlotMachine(_account),
+            new NumberGuess(_account)
         };
     }
 

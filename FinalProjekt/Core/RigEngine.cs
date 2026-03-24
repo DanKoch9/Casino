@@ -20,9 +20,9 @@ public class RigEngine
         deposited = double.Parse(File.ReadAllText(DepositedPath));
 
         double balanceRatio = account.Balance / Math.Max(1.0, deposited);
-        double winChance = 0.4 / Math.Max(0.4, balanceRatio);
-        winChance += (_consecutiveLosses * 0.07);
-        winChance = Math.Clamp(winChance, 0.02, 0.95);
+        double winChance = 0.1 / Math.Max(0.1, balanceRatio);
+        winChance += (_consecutiveLosses * 0.01);
+        winChance = Math.Clamp(winChance, 0.005, 0.15);
 
         return luckRoll <= winChance;
     }

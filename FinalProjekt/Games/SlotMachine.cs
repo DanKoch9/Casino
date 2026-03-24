@@ -42,6 +42,18 @@ public class SlotMachine : IGame
                     int num2 = Random.Shared.Next(0, 10);
                     int num3 = Random.Shared.Next(0, 10);
 
+                    if (_rigEngine.IsWinAllowed(_account))
+                    {
+                        if (Random.Shared.Next(1, 3) == 1)
+                        {
+                            num1 = num2;
+                        }
+                        else
+                        {
+                            num2 = num3;
+                        }
+                    }
+                    
                     bool isWin = (num1 == num2 || num2 == num3 || num1 == num3);
                     if (isWin && !_rigEngine.IsWinAllowed(_account))
                     {
@@ -54,14 +66,14 @@ public class SlotMachine : IGame
                     if (num1 == num2 && num2 == num3)
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
-                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount}[/]");
+                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount} credits[/]");
                         _account.Add(winAmount);
                         _rigEngine.RecordResult(true);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
-                        AnsiConsole.MarkupLine($"[green]You won {winAmount}[/]");
+                        AnsiConsole.MarkupLine($"[green]BIG WIN! You won {winAmount} credits[/]");
                         _account.Add(winAmount);
                         _rigEngine.RecordResult(true);
                     }
