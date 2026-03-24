@@ -12,14 +12,14 @@ public class Account
     public double Balance { get; set; }
     public double Deposited { get; set; }
     
-    public async Task InitializeAsync()
+    public async Task Initialize()
     {
         var (balance, deposited) = await _db.Load();
         Balance = balance;
         Deposited = deposited;
     }
 
-    public async Task SaveAsync()
+    public async Task Save()
     {
         await _db.Save(Balance, Deposited);
     }
@@ -27,26 +27,25 @@ public class Account
     public void Add(int amount)
     {
         Balance += amount;
-        _ = SaveAsync();
+        _ = Save();
     }
 
     public void Deduct(int amount)
     {
         Balance -= amount;
-        _ = SaveAsync();
+        _ = Save();
     }
 
     public void Deposit()
     {
         int amount = AnsiConsole.Prompt(
-            new TextPrompt<int>("How much do you want to add? (USD)")
+            new TextPrompt<int>("How much do you want to add? 1 CZK = 1 credit, minimum 15 CZK: ")
                 .Validate(n => n > 0 ? ValidationResult.Success() : ValidationResult.Error("[red]Invalid input[/]"))
+                .Validate(n => n >= 15 ? ValidationResult.Success() : ValidationResult.Error("[red]Minimum deposit is 15 CZK[/]"))
         );
 
         StripeService stripe = new StripeService();
-        Session session = stripe.CreateCheckoutSession(amount, "user_123");
-
-        amount *= 100;
+        Session session = stripe.CreateCheckoutSession(amount, "gooner");
         
         AnsiConsole.MarkupLine($"\n[gold1]Opening Stripe Checkout for {amount} credits...[/]");
         Process.Start(new ProcessStartInfo(session.Url) { UseShellExecute = true });
@@ -62,7 +61,7 @@ public class Account
                         ctx.Status("[green]Payment Confirmed! Adding credits...[/]");
                         Balance += amount;
                         Deposited += amount;
-                        _ = SaveAsync();
+                        _ = Save();
                         break;
                     }
                     else if (updatedSession.Status == "expired" || updatedSession.Status == "canceled")

@@ -25,7 +25,7 @@ public class StripeService
                     PriceData = new SessionLineItemPriceDataOptions
                     {
                         UnitAmount = amount * 100,
-                        Currency = "usd",
+                        Currency = "czk",
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = $"{amount} Casino Credits",

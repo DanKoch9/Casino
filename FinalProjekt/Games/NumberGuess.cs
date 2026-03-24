@@ -56,7 +56,7 @@ public class NumberGuess : IGame
                         new TextPrompt<int>("What is your guess?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                     );
-                    int target = Random.Shared.Next(1, maxNum);
+                    int target = Random.Shared.Next(1, maxNum+1);
                     Thread.Sleep(1000);
                     AnsiConsole.MarkupLine($"[green]The number was {target}[/]");
                     Thread.Sleep(670);
@@ -67,7 +67,7 @@ public class NumberGuess : IGame
                             int winAmount = PayoutEngine.GetLogPayout(bet, maxNum/4);
                             _rigEngine.RecordResult(true);
                             AnsiConsole.MarkupLine($"[gold1]YOU GUESSED IT!! You won {winAmount} credits[/]");
-                            _account.Add(winAmount);
+                            _account.Add(winAmount + bet);
                         }
                     }
                     else

@@ -20,7 +20,7 @@ public class CasinoApp
 
     public async Task InitializeAsync()
     {
-        await _account.InitializeAsync();
+        await _account.Initialize();
     }
 
     public void ShowSplash()

@@ -71,14 +71,14 @@ public class SlotMachine : IGame
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
                         AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount} credits[/]");
-                        _account.Add(winAmount);
+                        _account.Add(winAmount + bet);
                         _rigEngine.RecordResult(true);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
                         AnsiConsole.MarkupLine($"[green]BIG WIN! You won {winAmount} credits[/]");
-                        _account.Add(winAmount);
+                        _account.Add(winAmount + bet);
                         _rigEngine.RecordResult(true);
                     }
                     else
