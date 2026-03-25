@@ -12,7 +12,7 @@ public class NumberGuess : IGame
     {
         Console.Clear();
 
-        AnsiConsole.Write(new FigletText("Number Guess")
+        AnsiConsole.Write(new FigletText(Name)
             .Color(Color.Yellow)
         );
         AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");

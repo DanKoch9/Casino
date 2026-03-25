@@ -1,11 +1,16 @@
 using Spectre.Console;
+using FinalProjekt.Core;
 
 namespace FinalProjekt.UI;
 
-public class SlotRenderer
+public class SlotRenderer : IRenderer
 {
-    public void AnimateSpin(int target1, int target2, int target3)
+    public void PlayAnim(params object[] args)
     {
+        int target1 = (int)args[0];
+        int target2 = (int)args[1];
+        int target3 = (int)args[2];
+
         Table table = new Table().Centered().Border(TableBorder.Rounded).HideHeaders();
         table.AddColumn(new TableColumn("").Centered());
         table.AddColumn(new TableColumn("").Centered());

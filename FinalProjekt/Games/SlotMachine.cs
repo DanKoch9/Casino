@@ -65,7 +65,7 @@ public class SlotMachine : IGame
                         }
                     }
                     
-                    _renderer.AnimateSpin(num1, num2, num3);
+                    _renderer.PlayAnim(num1, num2, num3);
                     
                     if (num1 == num2 && num2 == num3)
                     {
@@ -100,7 +100,7 @@ public class SlotMachine : IGame
     {
         Console.Clear();
 
-        AnsiConsole.Write(new FigletText("Slot Machine")
+        AnsiConsole.Write(new FigletText(Name)
             .Color(Color.Green)
         );
         AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
