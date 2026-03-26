@@ -12,6 +12,7 @@ public class DBConnector
     private string? _token;
     private string? _userId;
     private string? _recordId;
+    public string? UserId => _userId;
     private const string TokenFile = "token.dat";
 
     private string GetUrl() => Environment.GetEnvironmentVariable("PB_BASE_URL") ?? "https://casino.danykoch.cz";

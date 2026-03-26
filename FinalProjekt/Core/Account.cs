@@ -54,7 +54,7 @@ public class Account
         );
 
         StripeService stripe = new StripeService();
-        Session session = stripe.CreateCheckoutSession(amount, "gooner");
+        Session session = stripe.CreateCheckoutSession(amount, _db.UserId ?? "unknown");
         
         AnsiConsole.MarkupLine($"\n[gold1]Opening Stripe Checkout for {amount} credits...[/]");
         Process.Start(new ProcessStartInfo(session.Url) { UseShellExecute = true });
