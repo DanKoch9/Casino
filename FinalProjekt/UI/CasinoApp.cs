@@ -19,7 +19,7 @@ public class CasinoApp
         };
     }
 
-    public async Task InitializeAsync()
+    public async Task Initialize()
     {
         await _account.Initialize();
     }
@@ -37,19 +37,34 @@ public class CasinoApp
     {
         while (true)
         {
+            if (!_account.IsLoggedIn())
+            {
+                Console.Clear();
+                AnsiConsole.Write(new FigletText("CASINO").Color(Color.White));
+                AnsiConsole.MarkupLine("[yellow]Please log in to play...[/]");
+                _account.Initialize().Wait();
+                if (!_account.IsLoggedIn()) continue;
+            }
+
             Console.Clear();
             ShowSplash();
 
             SelectionPrompt<string> menu = new SelectionPrompt<string>()
                 .Title("Select a game")
                 .AddChoices(_games.Select(g => g.Name))
-                .AddChoices("Add Credits", "Exit");
+                .AddChoices("Add Credits", "Logout", "Exit");
 
             string choice = AnsiConsole.Prompt(menu);
 
             if (choice == "Exit")
             {
                 return;
+            }
+
+            if (choice == "Logout")
+            {
+                _account.Logout();
+                continue;
             }
 
             if (choice == "Add Credits")

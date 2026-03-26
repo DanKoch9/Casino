@@ -19,6 +19,15 @@ public class Account
         Deposited = deposited;
     }
 
+    public bool IsLoggedIn() => _db.IsLoggedIn();
+
+    public void Logout()
+    {
+        _db.Logout();
+        Balance = 0;
+        Deposited = 0;
+    }
+
     public async Task Save()
     {
         await _db.Save(Balance, Deposited);

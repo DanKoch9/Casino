@@ -35,8 +35,8 @@ public class StripeService
                 },
             },
             Mode = "payment",
-            SuccessUrl = "https://casino.danykoch.cz/success",
-            CancelUrl = "https://casino.danykoch.cz/cancel",
+            SuccessUrl = "https://casino.danykoch.cz/success/",
+            CancelUrl = "https://casino.danykoch.cz/cancel/",
             Metadata = new Dictionary<string, string>
             {
                 { "userId", userId }
