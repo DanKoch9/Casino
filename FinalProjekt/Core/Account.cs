@@ -50,7 +50,7 @@ public class Account
         int amount = AnsiConsole.Prompt(
             new TextPrompt<int>("How much do you want to add? 1 CZK = 1 credit, minimum 15 CZK: ")
                 .Validate(n => n > 0 ? ValidationResult.Success() : ValidationResult.Error("[red]Invalid input[/]"))
-                .Validate(n => n >= 15 ? ValidationResult.Success() : ValidationResult.Error("[red]Minimum deposit is 15 CZK[/]"))
+                .Validate(n => n >= 15 && n < 1000000 ? ValidationResult.Success() : ValidationResult.Error("[red]Minimum deposit is 15 CZK, maximum is 999,999.99 CZK[/]"))
         );
 
         StripeService stripe = new StripeService();
