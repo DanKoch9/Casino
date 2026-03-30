@@ -38,6 +38,7 @@ public class Roulette : IGame
                             ? ValidationResult.Success()
                             : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
             );
+            _account.Deduct(bet);
             ShowSplash();
             List<int> betNums = new List<int>();
             var betType = AnsiConsole.Prompt(
@@ -79,7 +80,6 @@ public class Roulette : IGame
                 case "3rd Dozen (25-36)":
                     break;
             }
-            _account.Deduct(bet);
             int target = Random.Shared.Next(0, 36);
             Thread.Sleep(500);
             Console.WriteLine(willWin);
@@ -92,19 +92,12 @@ public class Roulette : IGame
                     target = Random.Shared.Next(0, 36);
                 }
             }
-            else
-            {
-                while (!betNums.Contains(target))
-                {
-                    target = Random.Shared.Next(0, 36);
-                }
-            }
             
             _renderer.PlayAnim(target);
             if (betNums.Contains(target))
             {
                 int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
-                AnsiConsole.MarkupLine($"[gold] YOU WIN {winAmount} credits!!![/]");
+                AnsiConsole.MarkupLine($"[gold1] YOU WIN {winAmount} credits!!![/]");
                 _account.Add(winAmount + bet);
                 _rigEngine.RecordResult(true);
             }
