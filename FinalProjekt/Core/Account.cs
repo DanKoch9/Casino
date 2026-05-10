@@ -79,7 +79,7 @@ public class Account
         Balance -= item.Price;
         OwnedItems.Add(item);
         DateTime now = DateTime.Now;
-        History.Add(new Transaction(now.ToString("yyyy-MM-dd"), now.ToString("HH:mm:ss"), $"Shop - {item.Name}", -item.Price));
+        History.Add(new Transaction(now.ToString("dd-MM-yyyy"), now.ToString("HH:mm:ss"), $"Shop - {item.Name}", -item.Price));
         _ = Save(-item.Price, $"Shop - {item.Name}");
     }
 
@@ -87,7 +87,7 @@ public class Account
     {
         Balance += amt;
         DateTime now = DateTime.Now;
-        History.Add(new Transaction(now.ToString("yyyy-MM-dd"), now.ToString("HH:mm:ss"), desc, amt));
+        History.Add(new Transaction(now.ToString("dd-MM-yyyy"), now.ToString("HH:mm:ss"), desc, amt));
         await Save(amt, desc);
     }
 
