@@ -16,7 +16,8 @@ public class RigEngine
     {
         double luckRoll = Random.Shared.NextDouble();
 
-        double balanceRatio = account.Balance / Math.Clamp(account.Deposited, 1.0, 100000);
+        double netWorth = account.Balance + account.OwnedItems.Sum(i => i.Price);
+        double balanceRatio = netWorth / Math.Clamp(account.Deposited, 1.0, 100000);
 
         double winChance = _winProbability / Math.Max(0.1, balanceRatio);
         

@@ -37,7 +37,7 @@ public class SlotMachine : IGame
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
-                    _account.Deduct(bet);
+                    _account.Deduct(bet, "Slot Machine - Bet");
                     int num1 = Random.Shared.Next(0, 10);
                     int num2 = Random.Shared.Next(0, 10);
                     int num3 = Random.Shared.Next(0, 10);
@@ -71,14 +71,14 @@ public class SlotMachine : IGame
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
                         AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount} credits[/]");
-                        _account.Add(winAmount + bet);
+                        _account.Add(winAmount + bet, "Slot Machine - Jackpot");
                         _rigEngine.RecordResult(true);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
                         int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
                         AnsiConsole.MarkupLine($"[green]BIG WIN! You won {winAmount} credits[/]");
-                        _account.Add(winAmount + bet);
+                        _account.Add(winAmount + bet, "Slot Machine - Win");
                         _rigEngine.RecordResult(true);
                     }
                     else

@@ -45,7 +45,7 @@ public class Roulette : IGame
                                     ? ValidationResult.Success()
                                     : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
-                    _account.Deduct(bet);
+                    _account.Deduct(bet, "Roulette - Bet");
                     ShowSplash();
                     List<int> betNums = new List<int>();
                     var betType = AnsiConsole.Prompt(
@@ -135,7 +135,7 @@ public class Roulette : IGame
                     {
                         int winAmount = (int)(bet * multiplier);
                         AnsiConsole.MarkupLine($"[gold1] YOU WIN {winAmount} credits!!![/]");
-                        _account.Add(winAmount + bet);
+                        _account.Add(winAmount + bet, "Roulette - Win");
                         _rigEngine.RecordResult(true);
                     }
                     else

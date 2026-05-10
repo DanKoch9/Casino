@@ -113,9 +113,9 @@ public class DBConnector
         _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
         return true;
     }
-public async Task<(double balance, double deposited)> Load()
+public async Task<(double balance, double deposited, Dictionary<string, bool>? properties)> Load()
 {
-    if (!await Authenticate()) return (1000, 0);
+    if (!await Authenticate()) return (1000, 0, null);
 
     var url = GetUrl();
     var response = await _client.GetAsync($"{url}/api/collections/casino/records?filter=(user='{_userId}')&limit=1");
@@ -127,49 +127,64 @@ public async Task<(double balance, double deposited)> Load()
         {
             var record = list.Items[0];
             _recordId = record.Id;
-            return (record.Balance, record.Deposited);
+            return (record.Balance, record.Deposited, record.Properties);
         }
     }
     else
+    {
+        var createResponse = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", new
         {
-            
-            var createResponse = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", new
-            {
-                balance = 1000,
-                deposited = 0,
-                user = _userId
-            });
+            balance = 1000,
+            deposited = 0,
+            user = _userId
+        });
 
-            if (createResponse.IsSuccessStatusCode)
-            {
-                var newRecord = await createResponse.Content.ReadFromJsonAsync<GameRecord>();
-                _recordId = newRecord?.Id;
-                return (1000, 0);
-            }
-            else
-            {
-                var errorBody = await createResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"[DB] Failed to create first record: {createResponse.StatusCode} - {errorBody}");
-            }
+        if (createResponse.IsSuccessStatusCode)
+        {
+            var newRecord = await createResponse.Content.ReadFromJsonAsync<GameRecord>();
+            _recordId = newRecord?.Id;
+            return (1000, 0, null);
         }
+        else
+        {
+            var errorBody = await createResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"[DB] Failed to create first record: {createResponse.StatusCode} - {errorBody}");
+        }
+    }
 
-    return (1000, 0); 
+    return (1000, 0, null);
 }
 
-    public async Task Save(double balance, double deposited)
+    public async Task LogTransaction(double value, string type)
     {
         if (!await Authenticate()) return;
-        
+        var response = await _client.PostAsJsonAsync($"{GetUrl()}/api/collections/transactions/records", new
+        {
+            value,
+            type,
+            user = _userId
+        });
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[DB] Failed to log transaction: {response.StatusCode} - {body}");
+        }
+    }
+
+    public async Task Save(double balance, double deposited, Dictionary<string, bool>? properties)
+    {
+        if (!await Authenticate()) return;
+
         if (_recordId == null) await Load();
 
-        var data = new { balance, deposited, user = _userId };
+        var data = new { balance, deposited, user = _userId, properties };
         var url = GetUrl();
 
         if (_recordId != null)
         {
             await _client.PatchAsJsonAsync($"{url}/api/collections/casino/records/{_recordId}", data);
         }
-        else 
+        else
         {
             var response = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", data);
             if (response.IsSuccessStatusCode)
@@ -194,10 +209,11 @@ public async Task<(double balance, double deposited)> Load()
     }
     private class UserRecord { [JsonPropertyName("id")] public string? Id { get; set; } }
     private class RecordList { [JsonPropertyName("items")] public GameRecord[]? Items { get; set; } }
-    private class GameRecord 
-    { 
-        [JsonPropertyName("id")] public string? Id { get; set; } 
-        [JsonPropertyName("balance")] public double Balance { get; set; } 
-        [JsonPropertyName("deposited")] public double Deposited { get; set; } 
+    private class GameRecord
+    {
+        [JsonPropertyName("id")] public string? Id { get; set; }
+        [JsonPropertyName("balance")] public double Balance { get; set; }
+        [JsonPropertyName("deposited")] public double Deposited { get; set; }
+        [JsonPropertyName("properties")] public Dictionary<string, bool>? Properties { get; set; }
     }
 }

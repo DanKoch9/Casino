@@ -44,7 +44,7 @@ public class NumberGuess : IGame
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
-                    _account.Deduct(bet);
+                    _account.Deduct(bet, "Number Guess - Bet");
 
                     int maxNum = AnsiConsole.Prompt(
                         new TextPrompt<int>("What is the highest number you can guess? (Minimum is 4)")
@@ -67,7 +67,7 @@ public class NumberGuess : IGame
                             int winAmount = PayoutEngine.GetLogPayout(bet, maxNum/4);
                             _rigEngine.RecordResult(true);
                             AnsiConsole.MarkupLine($"[gold1]YOU GUESSED IT!! You won {winAmount} credits[/]");
-                            _account.Add(winAmount + bet);
+                            _account.Add(winAmount + bet, "Number Guess - Win");
                         }
                     }
                     else

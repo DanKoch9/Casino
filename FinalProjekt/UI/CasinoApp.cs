@@ -1,12 +1,17 @@
+using FinalProjekt.Core;
+using FinalProjekt.Data;
 using FinalProjekt.Games;
 using Spectre.Console;
 
-namespace FinalProjekt.Core;
+namespace FinalProjekt.UI;
 
 public class CasinoApp
 {
-    private readonly List<IGame> _games;
     private readonly Account _account;
+    private readonly List<IGame> _games;
+    private readonly ShopMenu _shop;
+    private readonly StatsMenu _stats;
+    private readonly HistoryMenu _history;
 
     public CasinoApp()
     {
@@ -15,8 +20,12 @@ public class CasinoApp
         {
             new SlotMachine(_account),
             new NumberGuess(_account),
-            new Roulette(_account)
+            new Roulette(_account),
+            new SportsBetting(_account)
         };
+        _shop    = new ShopMenu(_account);
+        _stats   = new StatsMenu(_account);
+        _history = new HistoryMenu(_account);
     }
 
     public async Task Initialize()
@@ -27,9 +36,7 @@ public class CasinoApp
     public void ShowSplash()
     {
         Console.Clear();
-        AnsiConsole.Write(new FigletText("CASINO")
-            .Color(Color.White)
-        );
+        AnsiConsole.Write(new FigletText("CASINO").Color(Color.White));
         AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
     }
 
@@ -46,38 +53,37 @@ public class CasinoApp
                 if (!_account.IsLoggedIn()) continue;
             }
 
-            Console.Clear();
             ShowSplash();
 
-            SelectionPrompt<string> menu = new SelectionPrompt<string>()
+            string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
                 .Title("Select a game")
                 .AddChoices(_games.Select(g => g.Name))
-                .AddChoices("Add Credits", "Logout", "Exit");
+                .AddChoices("Add Credits", "Shop", "Stats", "Transaction History", "Logout", "Exit")
+            );
 
-            string choice = AnsiConsole.Prompt(menu);
-
-            if (choice == "Exit")
+            switch (choice)
             {
-                return;
-            }
-
-            if (choice == "Logout")
-            {
-                _account.Logout();
-                continue;
-            }
-
-            if (choice == "Add Credits")
-            {
-                _account.Deposit();
-                continue;
-            }
-
-            IGame? selectedGame = _games.FirstOrDefault(g => g.Name == choice);
-            if (selectedGame != null)
-            {
-                selectedGame.ShowSplash();
-                selectedGame.Play();
+                case "Exit":
+                    return;
+                case "Logout":
+                    _account.Logout();
+                    break;
+                case "Add Credits":
+                    new StripeService().ProcessDeposit(_account);
+                    break;
+                case "Shop":
+                    _shop.Show();
+                    break;
+                case "Stats":
+                    _stats.Show();
+                    break;
+                case "Transaction History":
+                    _history.Show();
+                    break;
+                default:
+                    var game = _games.FirstOrDefault(g => g.Name == choice);
+                    if (game != null) { game.ShowSplash(); game.Play(); }
+                    break;
             }
         }
     }

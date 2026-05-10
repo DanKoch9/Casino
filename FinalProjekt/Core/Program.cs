@@ -1,7 +1,16 @@
-﻿using FinalProjekt.Core;
+﻿namespace FinalProjekt.Core;
 
-// Traverse up to find the .env file if running from bin/Debug/net10.0
-DotNetEnv.Env.TraversePath().Load();
-CasinoApp app = new CasinoApp();
-await app.Initialize();
-app.Loop();
+using System.Threading.Tasks;
+using FinalProjekt.UI;
+using DotNetEnv;
+
+class Program
+{
+    static async Task Main() 
+    {
+        DotNetEnv.Env.TraversePath().Load();
+        CasinoApp app = new CasinoApp();
+        await app.Initialize();
+        app.Loop(); 
+    }
+}
