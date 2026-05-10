@@ -2,7 +2,7 @@ using FinalProjekt.Data;
 
 namespace FinalProjekt.Core;
 
-public record Transaction(string Date, string Time, string Description, int Amount);
+public record Transaction(string Date, string Time, string Description, long Amount);
 
 public class Account
 {
@@ -83,7 +83,7 @@ public class Account
         _ = Save(-item.Price, $"Shop - {item.Name}");
     }
 
-    public async Task Add(int amt, string desc = "Win")
+    public async Task Add(long amt, string desc = "Win")
     {
         Balance += amt;
         DateTime now = DateTime.Now;
@@ -91,7 +91,7 @@ public class Account
         await Save(amt, desc);
     }
 
-    public async Task Deduct(int amount, string description = "Bet")
+    public async Task Deduct(long amount, string description = "Bet")
     {
         Balance -= amount;
         DateTime now = DateTime.Now;
@@ -99,7 +99,7 @@ public class Account
         await Save(-amount, description);
     }
 
-    public async Task ConfirmDeposit(int amt)
+    public async Task ConfirmDeposit(long amt)
     {
         Balance += amt;
         Deposited += amt;

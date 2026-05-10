@@ -5,12 +5,14 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <NoWarn>CS4014</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Spectre.Console" Version="0.54.0" />
       <PackageReference Include="DotNetEnv" Version="3.1.1" />
       <PackageReference Include="Stripe.net" Version="43.14.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>

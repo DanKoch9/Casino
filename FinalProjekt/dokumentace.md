@@ -59,7 +59,7 @@ Asynchronní vstupní bod, který zavolá runtime .NET při spuštění programu
 **Jmenný prostor:** `FinalProjekt.Core`
 
 ```csharp
-public record Transaction(string Time, string Description, int Amount);
+public record Transaction(string Date, string Time, string Description, int Amount);
 ```
 
 Lehký neměnný datový typ reprezentující jednu finanční událost v paměti sezení. Záznamy (`record`) v C# automaticky generují hodnotovou rovnost, `ToString` a destruktor.
@@ -68,6 +68,7 @@ Lehký neměnný datový typ reprezentující jednu finanční událost v pamět
 
 | Vlastnost | Typ | Popis |
 |---|---|---|
+| `Date` | `string` | Datum ve formátu `"dd-MM-yyyy"` v okamžiku vytvoření transakce |
 | `Time` | `string` | Časové razítko ve formátu `"HH:mm:ss"` v okamžiku vytvoření transakce |
 | `Description` | `string` | Lidsky čitelný popis (např. `"Slot Machine - Bet"`, `"Deposit"`, `"Shop - Rolex Submariner"`) |
 | `Amount` | `int` | Kladné číslo pro příjem kreditů (výhry, vklady), záporné pro výdaje (sázky, nákupy v obchodě) |
@@ -211,14 +212,14 @@ výplata         = zaokrouhlit(bet * finalMultiplier)
 **Soubor:** `Core/RigEngine.cs`  
 **Jmenný prostor:** `FinalProjekt.Core`
 
-Stavová třída, která řídí, zda dané kolo skončí výhrou nebo prohrou. Klíčový princip je, že kasino si udržuje výhodu, ale engine zmírňuje prohry při sérii proher a zpřísňuje, když je hráč v plusu. Každá herní třída si vytváří vlastní instanci `RigEngine`, takže série proher jsou sledovány per-hra.
+Stavová třída, která řídí, zda dané kolo skončí výhrou nebo prohrou. Klíčový princip je, že kasino si udržuje výhodu, ale engine zmírňuje prohry při sérii proher a zpřísňuje, když je hráč v plusu. Jedna sdílená instance `RigEngine` je vytvořena v `CasinoApp` a předána všem hrám, takže série proher přechází mezi hrami.
 
 ### Pole
 
 | Pole | Typ | Popis |
 |---|---|---|
-| `_consecutiveLosses` | `int` | Čítač inkrementovaný při každé prohře, resetovaný na 0 při výhře. Řídí mechaniku kompenzace série. |
-| `_winProbability` | `double` | Základní pravděpodobnost výhry nastavená na `0.3` (30 %). Toto je strop pro hráče, který je přesně na nule. |
+| `_losses` | `int` | Čítač inkrementovaný při každé prohře, resetovaný na 0 při výhře. Řídí mechaniku kompenzace série. |
+| `_prob` | `double` | Základní pravděpodobnost výhry nastavená na `0.3` (30 %). Toto je strop pro hráče, který je přesně na nule. |
 
 ### `void RecordResult(bool won)`
 
@@ -238,9 +239,9 @@ Hlavní rozhodovací funkce. Vrátí `true`, pokud by toto kolo mělo být výhr
 1. **Hod** — vygeneruje náhodné `double` v `[0, 1)`.
 2. **Výpočet čisté hodnoty** — `account.Balance + součet cen všech vlastněných předmětů`. Měří celkovou hodnotu hráče včetně majetku.
 3. **Výpočet poměru zůstatku** — `čistáHodnota / clamp(account.Deposited, 1, 100000)`. Kolikrát více má hráč oproti tomu, co vložil. Poměr 1.0 znamená vyrovnaný stav; 2.0 znamená zdvojnásobení investice.
-4. **Výpočet šance výhry** — `_winProbability / max(0.1, balanceRatio)`. Šance výhry je nepřímo úměrná poměru zůstatku: čím je hráč ziskovější, tím nižší je šance. Při poměru 2.0 klesne šance výhry na 15 %; při 0.5 stoupne na 60 %.
-5. **Přidání bonusu za sérii** — `winChance += _consecutiveLosses * 0.02`. Každá po sobě jdoucí prohra přidá 2 procentní body k šanci výhry jako mechanismus soucitu.
-6. **Ořezání** — finální šance výhry je ořezána na `[0.005, _winProbability * 2]` = `[0.5 %, 60 %]`. Spodní mez zabraňuje zániku výhody kasina; horní mez zabraňuje bonusu za sérii triviálně zjednodušit hru.
+4. **Výpočet šance výhry** — `_prob / max(0.1, balanceRatio)`. Šance výhry je nepřímo úměrná poměru zůstatku: čím je hráč ziskovější, tím nižší je šance. Při poměru 2.0 klesne šance výhry na 15 %; při 0.5 stoupne na 60 %.
+5. **Přidání bonusu za sérii** — `winChance += _losses * 0.02`. Každá po sobě jdoucí prohra přidá 2 procentní body k šanci výhry jako mechanismus soucitu.
+6. **Ořezání** — finální šance výhry je ořezána na `[0.005, _prob * 2]` = `[0.5 %, 60 %]`. Spodní mez zabraňuje zániku výhody kasina; horní mez zabraňuje bonusu za sérii triviálně zjednodušit hru.
 7. **Rozhodnutí** — vrátí `luckRoll <= winChance`. Pokud náhodný hod spadne do vypočítaného okna, kolo je výhra.
 
 ---
@@ -340,7 +341,8 @@ Hlavní orchestrátor. Vlastní všechny subsystémy (účet, hry, menu) a říd
 
 Vytvoří a propojí všechny závislosti:
 - Vytvoří instanci `Account`.
-- Vytvoří jednu instanci `SlotMachine`, `NumberGuess`, `Roulette` a `SportsBetting`, každé dostane sdílený `Account`.
+- Vytvoří jednu sdílenou instanci `RigEngine`.
+- Vytvoří jednu instanci `SlotMachine`, `NumberGuess`, `Roulette` a `SportsBetting`, každé dostane sdílený `Account` i sdílený `RigEngine`.
 - Vytvoří `ShopMenu`, `StatsMenu` a `HistoryMenu`, každý dostane tentýž `Account`.
 
 ### `async Task Initialize()`
@@ -603,8 +605,8 @@ Hlavní herní smyčka. Běží, dokud hráč nezvolí „Main Menu".
 2. Pokud `"Play"`:
    - Zkontroluje zůstatek > 0; pokud ne, zobrazí chybu.
    - Vyzve k zadání sázky (ověřeno: 1 až aktuální zůstatek).
-   - Zavolá `_rigEngine.IsWinAllowed(_account)` pro předem stanovení výsledku.
    - Zavolá `_account.Deduct(bet, "Slot Machine - Bet")`.
+   - Zavolá `_rigEngine.IsWinAllowed(_account)` pro předem stanovení výsledku (po odečtení sázky, takže engine vidí přesný stav zůstatku).
    - Vygeneruje tři náhodné číslice (`num1`, `num2`, `num3`) v rozsahu 0–9.
    - **Pokud je výhra povolena:** náhodně zvolí buď nastavit `num1 = num2` (cesta ke jackpotu) nebo `num2 = num3` (cesta k částečné výhře). Jackpot (všechny tři stejné) nastane pouze v případě, že obě dvojice skončí stejně, což se stane v 50 % případů, kdy je výhra povolena.
    - **Pokud výhra není povolena:** vstoupí do smyčky, která zamíchá `num2` a `num3`, dokud nejsou všechny tři hodnoty různé, čímž zaručí prohru.
@@ -682,9 +684,10 @@ Vymaže terminál, zobrazí červený Figlet název „Roulette", ukáže zůsta
 
 1. Zobrazí prompt `"Play"` / `"Main Menu"`.
 2. Pokud `"Play"`:
-   - Zavolá `_rigEngine.IsWinAllowed(_account)` pro předem stanovení výsledku.
+   - Zkontroluje zůstatek > 0; pokud ne, zobrazí chybu.
    - Vyzve k zadání sázky.
    - Zavolá `_account.Deduct(bet, "Roulette - Bet")`.
+   - Zavolá `_rigEngine.IsWinAllowed(_account)` pro předem stanovení výsledku (po odečtení sázky).
    - Zavolá `ShowSplash()` pro obnovení zobrazení po odečtení.
    - Vylosuje předběžný náhodný `target` v `[0, 36]`.
    - Vyzve k výběru typu sázky a sestaví `betNums` (seznam výherních čísel kapsy) a `multiplier`:
@@ -768,7 +771,8 @@ Prodlevy jsou všechny blokující volání `Thread.Sleep`, takže simulace záp
    - Zobrazí zápas a kurzy.
    - Vyzve k zadání sázky.
    - Vyzve k výběru typu sázky: `"Winner"` nebo `"Exact Score (18x)"`.
-   - Zavolá `_rigEngine.IsWinAllowed(_account)` a `_account.Deduct(bet, "Sports Betting - Bet")`.
+   - Zavolá `_account.Deduct(bet, "Sports Betting - Bet")`.
+   - Zavolá `_rigEngine.IsWinAllowed(_account)` pro předem stanovení výsledku (po odečtení sázky).
 
    **Sázka na vítěze:**
    - Hráč vybere tým. Multiplikátor se nastaví na kurz tohoto týmu.

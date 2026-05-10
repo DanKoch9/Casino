@@ -8,12 +8,13 @@ public class Roulette : IGame
 {
     private readonly Account _account;
     public string Name => "Roulette";
-    private readonly RigEngine _rigEngine = new RigEngine();
+    private readonly RigEngine _rigEngine;
     private readonly RouletteRenderer _renderer = new RouletteRenderer();
     
-    public Roulette(Account account)
+    public Roulette(Account account, RigEngine rigEngine)
     {
         _account = account;
+        _rigEngine = rigEngine;
     }
     public void ShowSplash()
     {
@@ -21,7 +22,7 @@ public class Roulette : IGame
         AnsiConsole.Write(new FigletText("Roulette")
             .Color(Color.Red)
         );
-        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance:N0} credits[/]\n");
     }
 
     public void Play()
@@ -35,10 +36,13 @@ public class Roulette : IGame
             switch (choice)
             {
                 case "Play":
-                    bool willWin = _rigEngine.IsWinAllowed(_account);
-
-                    int bet = AnsiConsole.Prompt(
-                        new TextPrompt<int>("How much do you want to bet?")
+                    if (_account.Balance <= 0)
+                    {
+                        AnsiConsole.MarkupLine("[red]You have no credits left! Go back to the main menu to add more.[/]");
+                        break;
+                    }
+                    long bet = AnsiConsole.Prompt(
+                        new TextPrompt<long>("How much do you want to bet?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n =>
                                 n > 0 && n <= _account.Balance
@@ -46,6 +50,7 @@ public class Roulette : IGame
                                     : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
                     _account.Deduct(bet, "Roulette - Bet");
+                    bool willWin = _rigEngine.IsWinAllowed(_account);
                     ShowSplash();
                     List<int> betNums = new List<int>();
                     string betType = AnsiConsole.Prompt(
@@ -148,9 +153,9 @@ public class Roulette : IGame
                     _renderer.PlayAnim(target);
                     if (betNums.Contains(target))
                     {
-                        int winAmount = (int)(bet * multiplier);
-                        AnsiConsole.MarkupLine($"[gold1] YOU WIN {winAmount} credits!!![/]");
-                        _account.Add(winAmount + bet, "Roulette - Win");
+                        long winAmount = (long)(bet * multiplier);
+                        AnsiConsole.MarkupLine($"[gold1] YOU WIN {winAmount:N0} credits!!![/]");
+                        _account.Add(winAmount, "Roulette - Win");
                         _rigEngine.RecordResult(true);
                     }
                     else

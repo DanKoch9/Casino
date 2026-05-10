@@ -8,6 +8,7 @@ namespace FinalProjekt.UI;
 public class CasinoApp
 {
     private readonly Account _account;
+    private readonly RigEngine _rigEngine;
     private readonly List<IGame> _games;
     private readonly ShopMenu _shop;
     private readonly StatsMenu _stats;
@@ -16,12 +17,13 @@ public class CasinoApp
     public CasinoApp()
     {
         _account = new Account();
+        _rigEngine = new RigEngine();
         _games = new List<IGame>
         {
-            new SlotMachine(_account),
-            new NumberGuess(_account),
-            new Roulette(_account),
-            new SportsBetting(_account)
+            new SlotMachine(_account, _rigEngine),
+            new NumberGuess(_account, _rigEngine),
+            new Roulette(_account, _rigEngine),
+            new SportsBetting(_account, _rigEngine)
         };
         _shop    = new ShopMenu(_account);
         _stats   = new StatsMenu(_account);
@@ -37,7 +39,7 @@ public class CasinoApp
     {
         Console.Clear();
         AnsiConsole.Write(new FigletText("CASINO").Color(Color.White));
-        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance:N0} credits[/]\n");
     }
 
     public void Loop()

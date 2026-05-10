@@ -7,7 +7,7 @@ public class NumberGuess : IGame
 {
     private readonly Account _account;
     public string Name => "Number Guess";
-    private readonly RigEngine _rigEngine = new RigEngine();
+    private readonly RigEngine _rigEngine;
     public void ShowSplash()
     {
         Console.Clear();
@@ -15,12 +15,13 @@ public class NumberGuess : IGame
         AnsiConsole.Write(new FigletText(Name)
             .Color(Color.Yellow)
         );
-        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance:N0} credits[/]\n");
     }
 
-    public NumberGuess(Account account)
+    public NumberGuess(Account account, RigEngine rigEngine)
     {
         _account = account;
+        _rigEngine = rigEngine;
     }
     public void Play()
     {
@@ -39,24 +40,24 @@ public class NumberGuess : IGame
                         AnsiConsole.MarkupLine("[red]You have no credits left! Go back to the main menu to add more.[/]");
                         break;
                     }
-                    int bet = AnsiConsole.Prompt(
-                        new TextPrompt<int>("How much do you want to bet?")
+                    long bet = AnsiConsole.Prompt(
+                        new TextPrompt<long>("How much do you want to bet?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
                     _account.Deduct(bet, "Number Guess - Bet");
 
-                    int maxNum = AnsiConsole.Prompt(
-                        new TextPrompt<int>("What is the highest number you can guess? (Minimum is 4)")
+                    long maxNum = AnsiConsole.Prompt(
+                        new TextPrompt<long>("What is the highest number you can guess? (Minimum is 4)")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n >= 4 ? ValidationResult.Success() : ValidationResult.Error("[red]That's too low[/]"))
                     );
                     
-                    int guess = AnsiConsole.Prompt(
-                        new TextPrompt<int>("What is your guess?")
+                    long guess = AnsiConsole.Prompt(
+                        new TextPrompt<long>("What is your guess?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                     );
-                    int target = Random.Shared.Next(1, maxNum+1);
+                    long target = Random.Shared.Next(1, (int)maxNum+1);
                     Thread.Sleep(1000);
                     AnsiConsole.MarkupLine($"[green]The number was {target}[/]");
                     Thread.Sleep(670);
@@ -64,9 +65,9 @@ public class NumberGuess : IGame
                     {
                         if (guess == target)
                         {
-                            int winAmount = PayoutEngine.GetLogPayout(bet, maxNum/4);
+                            long winAmount = PayoutEngine.GetLogPayout(bet, maxNum/4.0);
                             _rigEngine.RecordResult(true);
-                            AnsiConsole.MarkupLine($"[gold1]YOU GUESSED IT!! You won {winAmount} credits[/]");
+                            AnsiConsole.MarkupLine($"[gold1]YOU GUESSED IT!! You won {winAmount:N0} credits[/]");
                             _account.Add(winAmount + bet, "Number Guess - Win");
                         }
                     }

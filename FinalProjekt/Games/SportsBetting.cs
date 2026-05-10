@@ -7,7 +7,7 @@ public class SportsBetting : IGame
 {
     private readonly Account _account;
     public string Name => "Sports Betting";
-    private readonly RigEngine _rigEngine = new RigEngine();
+    private readonly RigEngine _rigEngine;
 
     private readonly string[] _teams =
     {
@@ -21,9 +21,10 @@ public class SportsBetting : IGame
         "San Jose Sharks", "Seattle Kraken", "Vancouver Canucks", "Vegas Golden Knights"
     };
 
-    public SportsBetting(Account account)
+    public SportsBetting(Account account, RigEngine rigEngine)
     {
         _account = account;
+        _rigEngine = rigEngine;
     }
 
     public void ShowSplash()
@@ -32,7 +33,7 @@ public class SportsBetting : IGame
         AnsiConsole.Write(new FigletText("Sports Betting")
             .Color(Color.Blue)
         );
-        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance:N0} credits[/]\n");
     }
 
     private int SimGoals()
@@ -118,8 +119,8 @@ public class SportsBetting : IGame
                     AnsiConsole.MarkupLine($"\n  Favorite: [green]{fav}[/], pays [green]{favOdds}x[/]");
                     AnsiConsole.MarkupLine($"  Underdog: [red]{dog}[/], pays [red]{dogOdds}x[/]\n");
 
-                    int bet = AnsiConsole.Prompt(
-                        new TextPrompt<int>("How much do you want to bet?")
+                    long bet = AnsiConsole.Prompt(
+                        new TextPrompt<long>("How much do you want to bet?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance
                                 ? ValidationResult.Success()
@@ -131,8 +132,8 @@ public class SportsBetting : IGame
                         .AddChoices("Winner", "Exact Score (18x)")
                     );
 
-                    bool willWin = _rigEngine.IsWinAllowed(_account);
                     _account.Deduct(bet, "Sports Betting - Bet");
+                    bool willWin = _rigEngine.IsWinAllowed(_account);
 
                     int homeGoals, awayGoals;
                     string pickedTeam = "";
@@ -219,8 +220,8 @@ public class SportsBetting : IGame
 
                     if (won)
                     {
-                        int winAmount = (int)(bet * multiplier);
-                        AnsiConsole.MarkupLine($"\n[gold1]YOU WIN! +{winAmount} credits[/]");
+                        long winAmount = (long)(bet * multiplier);
+                        AnsiConsole.MarkupLine($"\n[gold1]YOU WIN! +{winAmount:N0} credits[/]");
                         _account.Add(winAmount + bet, "Sports Betting - Win");
                         _rigEngine.RecordResult(true);
                     }

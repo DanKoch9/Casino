@@ -10,10 +10,11 @@ public class SlotMachine : IGame
     public string Name => "Slot Machine";
     private readonly Account _account;    
     private readonly SlotRenderer _renderer = new SlotRenderer();
-    private readonly RigEngine _rigEngine = new RigEngine();
-    public SlotMachine(Account account)
+    private readonly RigEngine _rigEngine;
+    public SlotMachine(Account account, RigEngine rigEngine)
     {
         _account = account;
+        _rigEngine = rigEngine;
     }
     public void Play()
     {
@@ -32,13 +33,13 @@ public class SlotMachine : IGame
                         AnsiConsole.MarkupLine("[red]You have no credits left! Go back to the main menu to add more.[/]");
                         break;
                     }
-                    int bet = AnsiConsole.Prompt(
-                        new TextPrompt<int>("How much do you want to bet?")
+                    long bet = AnsiConsole.Prompt(
+                        new TextPrompt<long>("How much do you want to bet?")
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
-                    bool willWin = _rigEngine.IsWinAllowed(_account);
                     _account.Deduct(bet, "Slot Machine - Bet");
+                    bool willWin = _rigEngine.IsWinAllowed(_account);
                     int num1 = Random.Shared.Next(0, 10);
                     int num2 = Random.Shared.Next(0, 10);
                     int num3 = Random.Shared.Next(0, 10);
@@ -71,15 +72,15 @@ public class SlotMachine : IGame
                     
                     if (num1 == num2 && num2 == num3)
                     {
-                        int winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
-                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount} credits[/]");
+                        long winAmount = PayoutEngine.GetLogPayout(bet, 5.0);
+                        AnsiConsole.MarkupLine($"[gold1]JACKPOT!! You won {winAmount:N0} credits[/]");
                         _account.Add(winAmount + bet, "Slot Machine - Jackpot");
                         _rigEngine.RecordResult(true);
                     }
                     else if (num1 == num2 || num2 == num3 || num1 == num3)
                     {
-                        int winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
-                        AnsiConsole.MarkupLine($"[green]BIG WIN! You won {winAmount} credits[/]");
+                        long winAmount = PayoutEngine.GetLogPayout(bet, 2.0);
+                        AnsiConsole.MarkupLine($"[green]BIG WIN! You won {winAmount:N0} credits[/]");
                         _account.Add(winAmount + bet, "Slot Machine - Win");
                         _rigEngine.RecordResult(true);
                     }
@@ -105,7 +106,7 @@ public class SlotMachine : IGame
         AnsiConsole.Write(new FigletText(Name)
             .Color(Color.Green)
         );
-        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance} credits[/]\n");
+        AnsiConsole.MarkupLine($"\n[gold1]You have {_account.Balance:N0} credits[/]\n");
     }
     
 }
