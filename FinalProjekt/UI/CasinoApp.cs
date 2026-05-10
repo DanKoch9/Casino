@@ -55,19 +55,62 @@ public class CasinoApp
 
             ShowSplash();
 
-            string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title("Select a game")
-                .AddChoices(_games.Select(g => g.Name))
-                .AddChoices("Add Credits", "Shop", "Stats", "Transaction History", "Logout", "Exit")
+            string section = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                .Title("Where do you want to go?")
+                .AddChoices("Games", "Finances", "Logout", "Exit")
             );
 
-            switch (choice)
+            switch (section)
             {
                 case "Exit":
                     return;
                 case "Logout":
                     _account.Logout();
                     break;
+                case "Games":
+                    GamesMenu();
+                    break;
+                case "Finances":
+                    FinancesMenu();
+                    break;
+            }
+        }
+    }
+
+    private void GamesMenu()
+    {
+        while (true)
+        {
+            ShowSplash();
+
+            string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                .Title("Select a game")
+                .AddChoices(_games.Select(g => g.Name))
+                .AddChoices("Back")
+            );
+
+            if (choice == "Back") return;
+
+            var game = _games.FirstOrDefault(g => g.Name == choice);
+            if (game != null) { game.ShowSplash(); game.Play(); }
+        }
+    }
+
+    private void FinancesMenu()
+    {
+        while (true)
+        {
+            ShowSplash();
+
+            string choice = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                .Title("Finances")
+                .AddChoices("Add Credits", "Shop", "Stats", "Transaction History", "Back")
+            );
+
+            switch (choice)
+            {
+                case "Back":
+                    return;
                 case "Add Credits":
                     new StripeService().ProcessDeposit(_account);
                     break;
@@ -79,10 +122,6 @@ public class CasinoApp
                     break;
                 case "Transaction History":
                     _history.Show();
-                    break;
-                default:
-                    var game = _games.FirstOrDefault(g => g.Name == choice);
-                    if (game != null) { game.ShowSplash(); game.Play(); }
                     break;
             }
         }
