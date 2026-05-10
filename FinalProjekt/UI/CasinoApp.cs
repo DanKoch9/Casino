@@ -50,13 +50,16 @@ public class CasinoApp
                 AnsiConsole.Write(new FigletText("CASINO").Color(Color.White));
                 AnsiConsole.MarkupLine("[yellow]Please log in to play...[/]");
                 _account.Initialize().Wait();
-                if (!_account.IsLoggedIn()) continue;
+                if (!_account.IsLoggedIn())
+                {
+                    continue;
+                }
             }
 
             ShowSplash();
 
             string section = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title("Where do you want to go?")
+                .Title("Main menu")
                 .AddChoices("Games", "Finances", "Logout", "Exit")
             );
 
@@ -89,10 +92,17 @@ public class CasinoApp
                 .AddChoices("Back")
             );
 
-            if (choice == "Back") return;
+            if (choice == "Back")
+            {
+                return;
+            }
 
-            var game = _games.FirstOrDefault(g => g.Name == choice);
-            if (game != null) { game.ShowSplash(); game.Play(); }
+            IGame? game = _games.FirstOrDefault(g => g.Name == choice);
+            if (game != null)
+            {
+                game.ShowSplash();
+                game.Play();
+            }
         }
     }
 

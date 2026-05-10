@@ -25,16 +25,17 @@ public class HistoryMenu
             return;
         }
 
-        var table = new Table()
+        Table table = new Table()
             .Border(TableBorder.Rounded)
+            .AddColumn("[grey]Date[/]")
             .AddColumn("[grey]Time[/]")
             .AddColumn("Description")
             .AddColumn("[grey]Amount[/]");
 
-        foreach (var t in _account.History)
+        foreach (Transaction t in _account.History)
         {
             string amt = t.Amount >= 0 ? $"[green]+{t.Amount}[/]" : $"[red]{t.Amount}[/]";
-            table.AddRow($"[grey]{t.Time}[/]", t.Description, amt);
+            table.AddRow($"[grey]{t.Date}[/]", $"[grey]{t.Time}[/]", t.Description, amt);
         }
 
         AnsiConsole.Write(table);

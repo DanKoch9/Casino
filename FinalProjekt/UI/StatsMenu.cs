@@ -22,7 +22,7 @@ public class StatsMenu
         double assetsValue = _account.OwnedItems.Sum(i => i.Price);
         double netWorth    = _account.Balance + assetsValue;
 
-        var table = new Table()
+        Table table = new Table()
             .Border(TableBorder.Rounded)
             .AddColumn("[bold]Stat[/]")
             .AddColumn("[bold]Amount[/]");
@@ -39,8 +39,10 @@ public class StatsMenu
         if (_account.OwnedItems.Count > 0)
         {
             AnsiConsole.MarkupLine("\n[bold]Your Collection:[/]");
-            foreach (var item in _account.OwnedItems)
+            foreach (ShopItem item in _account.OwnedItems)
+            {
                 AnsiConsole.MarkupLine($"  [gold1]•[/] {item.Name}  [grey]({item.Category} — {item.Price:N0} cr)[/]");
+            }
         }
 
         AnsiConsole.MarkupLine("\n[grey]Press any key to continue...[/]");

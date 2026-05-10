@@ -17,7 +17,7 @@ public class StripeService
 
     public Session CreateCheckoutSession(long amount, string userId)
     {
-        var options = new SessionCreateOptions
+        SessionCreateOptions options = new SessionCreateOptions
         {
             PaymentMethodTypes = new List<string> { "card" },
             LineItems = new List<SessionLineItemOptions>

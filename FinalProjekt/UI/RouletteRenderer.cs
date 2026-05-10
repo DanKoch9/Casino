@@ -24,7 +24,10 @@ public class RouletteRenderer : IRenderer
         int totalSteps = fastSteps + slowdownSteps;
         
         int startPos = (targetIndex - totalSteps) % wheel.Length;
-        if (startPos < 0) startPos += wheel.Length;
+        if (startPos < 0)
+        {
+            startPos += wheel.Length;
+        }
 
         AnsiConsole.Live(new Text("Spinning..."))
             .Start(ctx =>
@@ -35,17 +38,24 @@ public class RouletteRenderer : IRenderer
                 {
                     int currentWheelIndex = (startPos + i) % wheel.Length;
 
-                    var table = new Table().Centered().Border(TableBorder.Rounded).HideHeaders();
-                    for (int c = 0; c < 10; c++) table.AddColumn(new TableColumn("").Centered());
+                    Table table = new Table().Centered().Border(TableBorder.Rounded).HideHeaders();
+                    for (int c = 0; c < 10; c++)
+                    {
+                        table.AddColumn(new TableColumn("").Centered());
+                    }
 
                     IRenderable[,] cells = new IRenderable[10, 10];
                     for (int r = 0; r < 10; r++)
+                    {
                         for (int c = 0; c < 10; c++)
+                        {
                             cells[r, c] = new Text("  ");
+                        }
+                    }
 
                     for (int w = 0; w < wheel.Length; w++)
                     {
-                        var (row, col) = GetGridPos(w);
+                        (int row, int col) = GetGridPos(w);
                         bool isBall = w == currentWheelIndex;
                         string numStr = $" {wheel[w].ToString().PadLeft(2)} ";
                         
@@ -61,8 +71,11 @@ public class RouletteRenderer : IRenderer
 
                     for (int r = 0; r < 10; r++)
                     {
-                        var rowItems = new List<IRenderable>();
-                        for (int c = 0; c < 10; c++) rowItems.Add(cells[r, c]);
+                        List<IRenderable> rowItems = new List<IRenderable>();
+                        for (int c = 0; c < 10; c++)
+                        {
+                            rowItems.Add(cells[r, c]);
+                        }
                         table.AddRow(rowItems.ToArray());
                     }
 
@@ -85,15 +98,27 @@ public class RouletteRenderer : IRenderer
 
     private (int row, int col) GetGridPos(int index)
     {
-        if (index < 10) return (0, index);
-        if (index < 19) return (index - 9, 9);
-        if (index < 28) return (9, 9 - (index - 18));
+        if (index < 10)
+        {
+            return (0, index);
+        }
+        if (index < 19)
+        {
+            return (index - 9, 9);
+        }
+        if (index < 28)
+        {
+            return (9, 9 - (index - 18));
+        }
         return (9 - (index - 27), 0);
     }
 
     private Color GetColor(int num)
     {
-        if (num == 0) return Color.Green;
+        if (num == 0)
+        {
+            return Color.Green;
+        }
         int[] redNumbers = { 1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36 };
         return redNumbers.Contains(num) ? Color.Red : Color.Grey;
     }

@@ -37,12 +37,11 @@ public class SlotMachine : IGame
                             .ValidationErrorMessage("[red]That's not a valid number[/]")
                             .Validate(n => n > 0 && n <= _account.Balance ? ValidationResult.Success() : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
+                    bool willWin = _rigEngine.IsWinAllowed(_account);
                     _account.Deduct(bet, "Slot Machine - Bet");
                     int num1 = Random.Shared.Next(0, 10);
                     int num2 = Random.Shared.Next(0, 10);
                     int num3 = Random.Shared.Next(0, 10);
-                    
-                    bool willWin = _rigEngine.IsWinAllowed(_account);
 
                     if (willWin)
                     {
@@ -61,7 +60,10 @@ public class SlotMachine : IGame
                         {
                             num2 = (num1 + Random.Shared.Next(1, 10)) % 10;
                             num3 = (num2 + Random.Shared.Next(1, 10)) % 10;
-                            if (num3 == num1) num3 = (num3 + 1) % 10;
+                            if (num3 == num1)
+                            {
+                                num3 = (num3 + 1) % 10;
+                            }
                         }
                     }
                     

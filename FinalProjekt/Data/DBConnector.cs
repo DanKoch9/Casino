@@ -12,27 +12,45 @@ public class DBConnector
     private string? _token;
     private string? _userId;
     private string? _recordId;
-    public string? UserId => _userId;
+    public string? UserId
+    {
+        get
+        {
+            return _userId;
+        }
+    }
     private const string TokenFile = "token.dat";
 
-    private string GetUrl() => Environment.GetEnvironmentVariable("PB_BASE_URL") ?? "https://casino.danykoch.cz";
+    private string GetUrl()
+    {
+        return Environment.GetEnvironmentVariable("PB_BASE_URL") ?? "https://casino.danykoch.cz";
+    }
 
-    public bool IsLoggedIn() => LoadLocalToken();
+    public bool IsLoggedIn()
+    {
+        return LoadLocalToken();
+    }
 
     public void Logout()
     {
         _token = null;
         _userId = null;
         _recordId = null;
-        if (File.Exists(TokenFile)) File.Delete(TokenFile);
+        if (File.Exists(TokenFile))
+        {
+            File.Delete(TokenFile);
+        }
         _client.DefaultRequestHeaders.Authorization = null;
     }
 
     public async Task<bool> Authenticate()
     {
-        if (LoadLocalToken()) return true;
+        if (LoadLocalToken())
+        {
+            return true;
+        }
 
-        var url = GetUrl();
+        string url = GetUrl();
         AuthMethods? authMethods;
         try 
         {
@@ -44,7 +62,7 @@ public class DBConnector
             return false;
         }
 
-        var google = authMethods?.AuthProviders?.FirstOrDefault(p => p.Name == "google");
+        AuthProvider? google = authMethods?.AuthProviders?.FirstOrDefault(p => p.Name == "google");
         if (google == null)
         {
             Console.WriteLine("[DB] Error: Google OAuth is not configured in PocketBase.");
@@ -52,7 +70,7 @@ public class DBConnector
         }
 
         string redirectUri = "http://localhost:8123/";
-        using var listener = new HttpListener();
+        using HttpListener listener = new HttpListener();
         listener.Prefixes.Add(redirectUri);
         listener.Start();
 
@@ -60,10 +78,10 @@ public class DBConnector
         Console.WriteLine("\n[AUTH] Opening browser for Google Login...");
         Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
 
-        var context = await listener.GetContextAsync();
-        var code = context.Request.QueryString["code"];
+        HttpListenerContext context = await listener.GetContextAsync();
+        string? code = context.Request.QueryString["code"];
 
-        using (var response = context.Response)
+        using (HttpListenerResponse response = context.Response)
         {
             string responseString = "<html><body><h1>Login Successful!</h1><p>You can close this window and return to the game.</p></body></html>";
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
@@ -72,7 +90,7 @@ public class DBConnector
         }
         listener.Stop();
 
-        var authResponse = await _client.PostAsJsonAsync($"{url}/api/collections/users/auth-with-oauth2", new
+        HttpResponseMessage authResponse = await _client.PostAsJsonAsync($"{url}/api/collections/users/auth-with-oauth2", new
         {
             provider = "google",
             code = code,
@@ -82,7 +100,7 @@ public class DBConnector
 
         if (authResponse.IsSuccessStatusCode)
         {
-            var result = await authResponse.Content.ReadFromJsonAsync<AuthResponse>();
+            AuthResponse? result = await authResponse.Content.ReadFromJsonAsync<AuthResponse>();
             _token = result?.Token;
             _userId = result?.Record?.Id;
             _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
@@ -97,16 +115,27 @@ public class DBConnector
     private void SaveLocalToken()
     {
         if (_token != null && _userId != null)
+        {
             File.WriteAllLines(TokenFile, new[] { _token, _userId });
+        }
     }
 
     private bool LoadLocalToken()
     {
-        if (!string.IsNullOrEmpty(_token)) return true;
-        if (!File.Exists(TokenFile)) return false;
+        if (!string.IsNullOrEmpty(_token))
+        {
+            return true;
+        }
+        if (!File.Exists(TokenFile))
+        {
+            return false;
+        }
         
-        var lines = File.ReadAllLines(TokenFile);
-        if (lines.Length < 2) return false;
+        string[] lines = File.ReadAllLines(TokenFile);
+        if (lines.Length < 2)
+        {
+            return false;
+        }
         
         _token = lines[0];
         _userId = lines[1];
@@ -115,24 +144,27 @@ public class DBConnector
     }
 public async Task<(double balance, double deposited, Dictionary<string, bool>? properties)> Load()
 {
-    if (!await Authenticate()) return (1000, 0, null);
+    if (!await Authenticate())
+    {
+        return (1000, 0, null);
+    }
 
-    var url = GetUrl();
-    var response = await _client.GetAsync($"{url}/api/collections/casino/records?filter=(user='{_userId}')&limit=1");
+    string url = GetUrl();
+    HttpResponseMessage response = await _client.GetAsync($"{url}/api/collections/casino/records?filter=(user='{_userId}')&limit=1");
 
     if (response.IsSuccessStatusCode)
     {
-        var list = await response.Content.ReadFromJsonAsync<RecordList>();
+        RecordList? list = await response.Content.ReadFromJsonAsync<RecordList>();
         if (list?.Items != null && list.Items.Length > 0)
         {
-            var record = list.Items[0];
+            GameRecord record = list.Items[0];
             _recordId = record.Id;
             return (record.Balance, record.Deposited, record.Properties);
         }
     }
     else
     {
-        var createResponse = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", new
+        HttpResponseMessage createResponse = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", new
         {
             balance = 1000,
             deposited = 0,
@@ -141,13 +173,13 @@ public async Task<(double balance, double deposited, Dictionary<string, bool>? p
 
         if (createResponse.IsSuccessStatusCode)
         {
-            var newRecord = await createResponse.Content.ReadFromJsonAsync<GameRecord>();
+            GameRecord? newRecord = await createResponse.Content.ReadFromJsonAsync<GameRecord>();
             _recordId = newRecord?.Id;
             return (1000, 0, null);
         }
         else
         {
-            var errorBody = await createResponse.Content.ReadAsStringAsync();
+            string errorBody = await createResponse.Content.ReadAsStringAsync();
             Console.WriteLine($"[DB] Failed to create first record: {createResponse.StatusCode} - {errorBody}");
         }
     }
@@ -157,8 +189,11 @@ public async Task<(double balance, double deposited, Dictionary<string, bool>? p
 
     public async Task LogTransaction(double value, string type)
     {
-        if (!await Authenticate()) return;
-        var response = await _client.PostAsJsonAsync($"{GetUrl()}/api/collections/transactions/records", new
+        if (!await Authenticate())
+        {
+            return;
+        }
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{GetUrl()}/api/collections/transactions/records", new
         {
             value,
             type,
@@ -166,19 +201,25 @@ public async Task<(double balance, double deposited, Dictionary<string, bool>? p
         });
         if (!response.IsSuccessStatusCode)
         {
-            var body = await response.Content.ReadAsStringAsync();
+            string body = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"[DB] Failed to log transaction: {response.StatusCode} - {body}");
         }
     }
 
     public async Task Save(double balance, double deposited, Dictionary<string, bool>? properties)
     {
-        if (!await Authenticate()) return;
+        if (!await Authenticate())
+        {
+            return;
+        }
 
-        if (_recordId == null) await Load();
+        if (_recordId == null)
+        {
+            await Load();
+        }
 
-        var data = new { balance, deposited, user = _userId, properties };
-        var url = GetUrl();
+        object data = new { balance, deposited, user = _userId, properties };
+        string url = GetUrl();
 
         if (_recordId != null)
         {
@@ -186,13 +227,34 @@ public async Task<(double balance, double deposited, Dictionary<string, bool>? p
         }
         else
         {
-            var response = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", data);
+            HttpResponseMessage response = await _client.PostAsJsonAsync($"{url}/api/collections/casino/records", data);
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<GameRecord>();
+                GameRecord? result = await response.Content.ReadFromJsonAsync<GameRecord>();
                 _recordId = result?.Id;
             }
         }
+    }
+
+    public async Task<List<(string time, string type, double value)>> GetTransactions()
+    {
+        if (!await Authenticate())
+        {
+            return new();
+        }
+
+        string url = GetUrl();
+        HttpResponseMessage response = await _client.GetAsync($"{url}/api/collections/transactions/records?filter=(user='{_userId}')&sort=-created&limit=50");
+
+        if (response.IsSuccessStatusCode)
+        {
+            TransactionList? list = await response.Content.ReadFromJsonAsync<TransactionList>();
+            if (list?.Items != null)
+            {
+                return list.Items.Select(i => (i.Created ?? "", i.Type ?? "", i.Value)).ToList();
+            }
+        }
+        return new();
     }
 
     private class AuthMethods { [JsonPropertyName("authProviders")] public List<AuthProvider>? AuthProviders { get; set; } }
@@ -215,5 +277,12 @@ public async Task<(double balance, double deposited, Dictionary<string, bool>? p
         [JsonPropertyName("balance")] public double Balance { get; set; }
         [JsonPropertyName("deposited")] public double Deposited { get; set; }
         [JsonPropertyName("properties")] public Dictionary<string, bool>? Properties { get; set; }
+    }
+    private class TransactionList { [JsonPropertyName("items")] public TransactionRecord[]? Items { get; set; } }
+    private class TransactionRecord
+    {
+        [JsonPropertyName("created")] public string? Created { get; set; }
+        [JsonPropertyName("type")] public string? Type { get; set; }
+        [JsonPropertyName("value")] public double Value { get; set; }
     }
 }

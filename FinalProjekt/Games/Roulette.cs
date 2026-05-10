@@ -48,7 +48,7 @@ public class Roulette : IGame
                     _account.Deduct(bet, "Roulette - Bet");
                     ShowSplash();
                     List<int> betNums = new List<int>();
-                    var betType = AnsiConsole.Prompt(
+                    string betType = AnsiConsole.Prompt(
                         new SelectionPrompt<string>()
                             .Title("What type of bet would you like to place?")
                             .AddChoices(new[]
@@ -77,7 +77,7 @@ public class Roulette : IGame
                             multiplier = 35;
                             break;
                         case "Red/Black":
-                            var color = AnsiConsole.Prompt(
+                            string color = AnsiConsole.Prompt(
                                 new SelectionPrompt<string>()
                                     .Title("Select color")
                                     .AddChoices("Red", "Black")
@@ -89,31 +89,46 @@ public class Roulette : IGame
                             break;
 
                         case "Even/Odd":
-                            var eo = AnsiConsole.Prompt(
+                            string eo = AnsiConsole.Prompt(
                                 new SelectionPrompt<string>()
                                     .Title("Select even or odd")
                                     .AddChoices("Even", "Odd")
                             );
                             for (int i = 1; i <= 36; i++)
                             {
-                                if (eo == "Even" && i % 2 == 0) betNums.Add(i);
-                                else if (eo == "Odd" && i % 2 != 0) betNums.Add(i);
+                                if (eo == "Even" && i % 2 == 0)
+                                {
+                                    betNums.Add(i);
+                                }
+                                else if (eo == "Odd" && i % 2 != 0)
+                                {
+                                    betNums.Add(i);
+                                }
                             }
                             multiplier = 1;
                             break;
 
                         case "1st Dozen (1-12)":
-                            for (int i = 1; i <= 12; i++) betNums.Add(i);
+                            for (int i = 1; i <= 12; i++)
+                            {
+                                betNums.Add(i);
+                            }
                             multiplier = 2;
                             break;
 
                         case "2nd Dozen (13-24)":
-                            for (int i = 13; i <= 24; i++) betNums.Add(i);
+                            for (int i = 13; i <= 24; i++)
+                            {
+                                betNums.Add(i);
+                            }
                             multiplier = 2;
                             break;
 
                         case "3rd Dozen (25-36)":
-                            for (int i = 25; i <= 36; i++) betNums.Add(i);
+                            for (int i = 25; i <= 36; i++)
+                            {
+                                betNums.Add(i);
+                            }
                             multiplier = 2;
                             break;
                     }

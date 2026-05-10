@@ -20,7 +20,7 @@ public class ShopMenu
             AnsiConsole.Write(new FigletText("Shop").Color(Color.Gold1));
             AnsiConsole.MarkupLine($"[gold1]You have {_account.Balance:N0} credits[/]\n");
 
-            var categories = ShopCatalog.Items.Select(i => i.Category).Distinct().ToList();
+            List<string> categories = ShopCatalog.Items.Select(i => i.Category).Distinct().ToList();
             categories.Add("Back");
 
             string cat = AnsiConsole.Prompt(new SelectionPrompt<string>()
@@ -28,7 +28,10 @@ public class ShopMenu
                 .AddChoices(categories)
             );
 
-            if (cat == "Back") return;
+            if (cat == "Back")
+            {
+                return;
+            }
 
             while (true)
             {
@@ -36,10 +39,10 @@ public class ShopMenu
                 AnsiConsole.Write(new FigletText("Shop").Color(Color.Gold1));
                 AnsiConsole.MarkupLine($"[gold1]You have {_account.Balance:N0} credits[/]\n");
 
-                var items = ShopCatalog.Items.Where(i => i.Category == cat).ToArray();
-                var labelMap = new Dictionary<string, ShopItem?>();
+                ShopItem[] items = ShopCatalog.Items.Where(i => i.Category == cat).ToArray();
+                Dictionary<string, ShopItem?> labelMap = new Dictionary<string, ShopItem?>();
 
-                foreach (var item in items)
+                foreach (ShopItem item in items)
                 {
                     bool owned = _account.OwnedItems.Contains(item);
                     string label = owned
@@ -54,10 +57,16 @@ public class ShopMenu
                     .AddChoices(labelMap.Keys)
                 );
 
-                if (picked == "Back") break;
+                if (picked == "Back")
+                {
+                    break;
+                }
 
-                var selected = labelMap[picked];
-                if (selected == null) break;
+                ShopItem? selected = labelMap[picked];
+                if (selected == null)
+                {
+                    break;
+                }
 
                 if (_account.OwnedItems.Contains(selected))
                 {

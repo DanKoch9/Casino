@@ -39,11 +39,14 @@ public class SportsBetting : IGame
     {
         int[] weights = { 2, 8, 16, 20, 18, 14, 10, 6, 4, 2 };
         int roll = Random.Shared.Next(100);
-        int cum = 0;
+        int sum = 0;
         for (int i = 0; i < weights.Length; i++)
         {
-            cum += weights[i];
-            if (roll < cum) return i;
+            sum += weights[i];
+            if (roll < sum)
+            {
+                return i;
+            }
         }
         return 3;
     }
@@ -52,8 +55,15 @@ public class SportsBetting : IGame
     {
         int[] homePeriods = new int[3];
         int[] awayPeriods = new int[3];
-        for (int i = 0; i < homeGoals; i++) homePeriods[Random.Shared.Next(3)]++;
-        for (int i = 0; i < awayGoals; i++) awayPeriods[Random.Shared.Next(3)]++;
+        for (int i = 0; i < homeGoals; i++)
+        {
+            homePeriods[Random.Shared.Next(3)]++;
+        }
+
+        for (int i = 0; i < awayGoals; i++)
+        {
+            awayPeriods[Random.Shared.Next(3)]++;
+        }
 
         AnsiConsole.MarkupLine($"\n[bold white]--- GAME START ---[/]");
         AnsiConsole.MarkupLine($"  [cyan]{away}[/] @ [yellow]{home}[/]\n");
@@ -61,12 +71,12 @@ public class SportsBetting : IGame
 
         string[] periods = { "1st Period", "2nd Period", "3rd Period" };
         int hr = 0, ar = 0;
-        for (int p = 0; p < 3; p++)
+        for (int i = 0; i < 3; i++)
         {
-            AnsiConsole.MarkupLine($"[grey]{periods[p]}...[/]");
+            AnsiConsole.MarkupLine($"[grey]{periods[i]}...[/]");
             Thread.Sleep(1400);
-            hr += homePeriods[p];
-            ar += awayPeriods[p];
+            hr += homePeriods[i];
+            ar += awayPeriods[i];
             AnsiConsole.MarkupLine($"  [yellow]{home}[/] [bold white]{hr}[/] - [bold white]{ar}[/] [cyan]{away}[/]");
             Thread.Sleep(700);
         }
@@ -93,7 +103,7 @@ public class SportsBetting : IGame
                         break;
                     }
 
-                    var shuffled = _teams.OrderBy(_ => Random.Shared.Next()).ToArray();
+                    string[] shuffled = _teams.OrderBy(_ => Random.Shared.Next()).ToArray();
                     string home = shuffled[0];
                     string away = shuffled[1];
 
@@ -103,7 +113,7 @@ public class SportsBetting : IGame
                     double favOdds = Math.Round(1.4 + Random.Shared.NextDouble() * 0.4, 1);
                     double dogOdds = Math.Round(2.0 + Random.Shared.NextDouble() * 0.8, 1);
 
-                    AnsiConsole.MarkupLine($"\n[bold]Tonight's matchup:[/]");
+                    AnsiConsole.MarkupLine($"\n[bold]Today's game[/]");
                     AnsiConsole.MarkupLine($"  [yellow]{home}[/] (home) vs [cyan]{away}[/] (away)");
                     AnsiConsole.MarkupLine($"\n  Favorite: [green]{fav}[/], pays [green]{favOdds}x[/]");
                     AnsiConsole.MarkupLine($"  Underdog: [red]{dog}[/], pays [red]{dogOdds}x[/]\n");
@@ -116,7 +126,7 @@ public class SportsBetting : IGame
                                 : ValidationResult.Error("[red]Bet must be between 1 and your balance[/]"))
                     );
 
-                    var betType = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                    string betType = AnsiConsole.Prompt(new SelectionPrompt<string>()
                         .Title("What do you want to bet on?")
                         .AddChoices("Winner", "Exact Score (18x)")
                     );
@@ -139,21 +149,32 @@ public class SportsBetting : IGame
 
                         homeGoals = SimGoals();
                         awayGoals = SimGoals();
-                        if (homeGoals == awayGoals) awayGoals++;
+                        if (homeGoals == awayGoals)
+                        {
+                            awayGoals++;
+                        }
 
                         if (willWin)
                         {
                             if (pickedTeam == home && homeGoals <= awayGoals)
+                            {
                                 homeGoals = awayGoals + Random.Shared.Next(1, 4);
+                            }
                             else if (pickedTeam == away && awayGoals <= homeGoals)
+                            {
                                 awayGoals = homeGoals + Random.Shared.Next(1, 4);
+                            }
                         }
                         else
                         {
                             if (pickedTeam == home && homeGoals > awayGoals)
+                            {
                                 awayGoals = homeGoals + Random.Shared.Next(1, 4);
+                            }
                             else if (pickedTeam == away && awayGoals > homeGoals)
+                            {
                                 homeGoals = awayGoals + Random.Shared.Next(1, 4);
+                            }
                         }
                     }
                     else
@@ -177,14 +198,15 @@ public class SportsBetting : IGame
                         }
                         else
                         {
-                            homeGoals = SimGoals();
-                            awayGoals = SimGoals();
-                            while (homeGoals == guessHome && awayGoals == guessAway)
+                            do
                             {
                                 homeGoals = SimGoals();
                                 awayGoals = SimGoals();
-                            }
-                            if (homeGoals == awayGoals) awayGoals++;
+                                if (homeGoals == awayGoals)
+                                {
+                                    awayGoals++;
+                                }
+                            } while (homeGoals == guessHome && awayGoals == guessAway);
                         }
                     }
 

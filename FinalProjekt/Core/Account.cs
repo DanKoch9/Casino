@@ -2,7 +2,7 @@ using FinalProjekt.Data;
 
 namespace FinalProjekt.Core;
 
-public record Transaction(string Time, string Description, int Amount);
+public record Transaction(string Date, string Time, string Description, int Amount);
 
 public class Account
 {
@@ -14,22 +14,44 @@ public class Account
     
     public async Task Initialize()
     {
-        var (balance, deposited, properties) = await _db.Load();
-        Balance = balance;
-        Deposited = deposited;
+        (double bal, double dep, Dictionary<string, bool>? props) = await _db.Load();
+        Balance = bal;
+        Deposited = dep;
         OwnedItems.Clear();
-        if (properties != null)
+        if (props != null)
         {
-            foreach (var item in ShopCatalog.Items)
+            foreach (ShopItem item in ShopCatalog.Items)
             {
-                if (properties.TryGetValue(item.Name, out bool owned) && owned)
+                if (props.TryGetValue(item.Name, out bool owned) && owned)
+                {
                     OwnedItems.Add(item);
+                }
             }
+        }
+
+        List<(string time, string type, double val)> dbHistory = await _db.GetTransactions();
+        History.Clear();
+        foreach ((string time, string type, double val) in dbHistory)
+        {
+            string t = time;
+            string d = "";
+            if (DateTime.TryParse(time, out DateTime dt))
+            {
+                DateTime local = dt.ToLocalTime();
+                t = local.ToString("HH:mm:ss");
+                d = local.ToString("dd-MM-yyyy");
+            }
+
+            History.Add(new Transaction(d, t, type, (int)val));
         }
     }
 
     public string? UserId => _db.UserId;
-    public bool IsLoggedIn() => _db.IsLoggedIn();
+    
+    public bool IsLoggedIn()
+    {
+        return _db.IsLoggedIn();
+    }
 
     public void Logout()
     {
@@ -40,46 +62,49 @@ public class Account
         OwnedItems.Clear();
     }
 
-    private async Task Persist(double value, string type)
+    public async Task Save()
     {
-        await _db.LogTransaction(value, type);
-        var props = ShopCatalog.Items.ToDictionary(i => i.Name, i => OwnedItems.Contains(i));
+        Dictionary<string, bool> props = ShopCatalog.Items.ToDictionary(i => i.Name, i => OwnedItems.Contains(i));
         await _db.Save(Balance, Deposited, props);
     }
 
-    public async Task Save()
+    private async Task Save(double val, string type)
     {
-        var props = ShopCatalog.Items.ToDictionary(i => i.Name, i => OwnedItems.Contains(i));
-        await _db.Save(Balance, Deposited, props);
+        await _db.LogTransaction(val, type);
+        await Save();
     }
 
     public void BuyItem(ShopItem item)
     {
         Balance -= item.Price;
         OwnedItems.Add(item);
-        History.Add(new Transaction(DateTime.Now.ToString("HH:mm:ss"), $"Shop - {item.Name}", -item.Price));
-        _ = Persist(-item.Price, $"Shop - {item.Name}");
+        DateTime now = DateTime.Now;
+        History.Add(new Transaction(now.ToString("yyyy-MM-dd"), now.ToString("HH:mm:ss"), $"Shop - {item.Name}", -item.Price));
+        _ = Save(-item.Price, $"Shop - {item.Name}");
     }
 
-    public void Add(int amount, string desc = "Win")
+    public async Task Add(int amt, string desc = "Win")
     {
-        Balance += amount;
-        History.Add(new Transaction(DateTime.Now.ToString("HH:mm:ss"), desc, amount));
-        _ = Persist(amount, desc);
+        Balance += amt;
+        DateTime now = DateTime.Now;
+        History.Add(new Transaction(now.ToString("yyyy-MM-dd"), now.ToString("HH:mm:ss"), desc, amt));
+        await Save(amt, desc);
     }
 
-    public void Deduct(int amount, string desc = "Bet")
+    public async Task Deduct(int amount, string description = "Bet")
     {
         Balance -= amount;
-        History.Add(new Transaction(DateTime.Now.ToString("HH:mm:ss"), desc, -amount));
-        _ = Persist(-amount, desc);
+        DateTime now = DateTime.Now;
+        History.Add(new Transaction(now.ToString("yyyy-MM-dd"), now.ToString("HH:mm:ss"), description, -amount));
+        await Save(-amount, description);
     }
 
-    public void ConfirmDeposit(int amount)
+    public async Task ConfirmDeposit(int amt)
     {
-        Balance += amount;
-        Deposited += amount;
-        History.Add(new Transaction(DateTime.Now.ToString("HH:mm:ss"), "Deposit", amount));
-        _ = Persist(amount, "Deposit");
+        Balance += amt;
+        Deposited += amt;
+        DateTime now = DateTime.Now;
+        History.Add(new Transaction(now.ToString("yyyy-MM-dd"), now.ToString("HH:mm:ss"), "Deposit", amt));
+        await Save(amt, "Deposit");
     }
 }
