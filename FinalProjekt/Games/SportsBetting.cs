@@ -104,9 +104,9 @@ public class SportsBetting : IGame
                     double dogOdds = Math.Round(2.0 + Random.Shared.NextDouble() * 0.8, 1);
 
                     AnsiConsole.MarkupLine($"\n[bold]Tonight's matchup:[/]");
-                    AnsiConsole.MarkupLine($"  [yellow]{home}[/] (home)  vs  [cyan]{away}[/] (away)");
-                    AnsiConsole.MarkupLine($"\n  Favorite : [green]{fav}[/]  pays [green]{favOdds}x[/]");
-                    AnsiConsole.MarkupLine($"  Underdog : [red]{dog}[/]  pays [red]{dogOdds}x[/]\n");
+                    AnsiConsole.MarkupLine($"  [yellow]{home}[/] (home) vs [cyan]{away}[/] (away)");
+                    AnsiConsole.MarkupLine($"\n  Favorite: [green]{fav}[/], pays [green]{favOdds}x[/]");
+                    AnsiConsole.MarkupLine($"  Underdog: [red]{dog}[/], pays [red]{dogOdds}x[/]\n");
 
                     int bet = AnsiConsole.Prompt(
                         new TextPrompt<int>("How much do you want to bet?")
